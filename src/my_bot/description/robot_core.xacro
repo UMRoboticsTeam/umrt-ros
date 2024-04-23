@@ -5,32 +5,51 @@
   <xacro:include filename="colours.xacro" />
 
   <!-- ====================== Constants ======================== -->
-  <xacro:property name="wheel_from_center" value="0.2"/>
+  <!-- Using REP 103 here. -njreichert -->
 
-  <!-- ====================== Links ======================== -->
+  <xacro:property name="chassis_length" value="0.75" />
+  <xacro:property name="chassis_width" value="0.3" />
+  <xacro:property name="chassis_height" value="0.15" />
+
+  <xacro:property name="wheel_chassis_buffer_len" value="0.005" />
+  <xacro:property name="wheel_x_spacing" value="0.2" />
+  <xacro:property name="wheel_y_spacing" value="${(chassis_width / 2) + (wheel_length / 2) + wheel_chassis_buffer_len}"/>
+  <xacro:property name="wheel_radius" value="0.075" />
+  <xacro:property name="wheel_length" value="0.04" />
+
+
   <!-- Base Link -->
   <link name="base_link">
 
   </link>
 
+
   <!-- Chassis -->
+  <joint name="chassis_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="chassis" />
+
+    <!-- separation distance between base_link (middle of chassis) and chassis origin -->
+    <origin xyz="-${chassis_length / 2} 0 0" />
+  </joint>
+
   <link name="chassis">
     <visual>
       <!-- shift box forward so chassis link origin is centered at back bottom -->
-      <origin xyz="0.375 0 0.075" />
+      <origin xyz="${chassis_length / 2} 0 ${chassis_height / 2}" />
       <geometry>
-        <box size="0.75 0.3 0.15" />
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}" />
       </geometry>
       <material name="white" />
     </visual>
     <collision>
-        <origin xyz="0.375 0 0.075" />
+        <origin xyz="${chassis_length / 2} 0 ${chassis_height / 2}" />
         <geometry>
-          <box size="0.75 0.3 0.15" />
+          <box size="${chassis_length} ${chassis_width} ${chassis_height}" />
         </geometry>
     </collision>
-    <xacro:inertial_box mass="0.5" x="0.375" y="0" z="0.075">
-      <origin xyz="0.375 0 0.075" rpy="0 0 0" />
+    <xacro:inertial_box mass="0.5" x="${chassis_length / 2}" y="0" z="${chassis_height / 2}">
+      <origin xyz="${chassis_length / 2} 0 ${chassis_height / 2}" rpy="0 0 0" />
     </xacro:inertial_box>
   </link>
 
@@ -38,20 +57,33 @@
     <material>Gazebo/White</material>
   </gazebo>
 
+
   <!-- Back Left Wheel -->
+  <joint name="left_back_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="left_back_wheel" />
+
+    <!-- transform from parent link to child link -->
+    <!-- joint is located at origin of child link -->
+    <origin xyz="-${wheel_x_spacing} ${wheel_y_spacing} 0" rpy="-${pi/2} 0 0" />
+
+    <!-- axis of rotation; takes normalized vector of direction to rotate around -->
+    <axis xyz="0 0 1" />
+  </joint>
+
   <link name="left_back_wheel">
     <visual>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
       <material name="blue" />
     </visual>
     <collision>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
     </collision>
-    <xacro:inertial_cylinder mass="0.1" length="0.04" radius="0.075">
+    <xacro:inertial_cylinder mass="0.1" length="${wheel_length}" radius="${wheel_radius}">
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_cylinder>
   </link>
@@ -60,20 +92,33 @@
     <material>Gazebo/Blue</material>
   </gazebo>
 
+
   <!-- Front Left Wheel -->
+  <joint name="left_front_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="left_front_wheel" />
+
+    <!-- transform from parent link to child link -->
+    <!-- joint is located at origin of child link -->
+    <origin xyz="${wheel_x_spacing} ${wheel_y_spacing} 0" rpy="-${pi/2} 0 0" />
+
+    <!-- axis of rotation; takes normalized vector of direction to rotate around -->
+    <axis xyz="0 0 1" />
+  </joint>
+
   <link name="left_front_wheel">
     <visual>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
       <material name="blue" />
     </visual>
     <collision>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
     </collision>
-    <xacro:inertial_cylinder mass="0.1" length="0.04" radius="0.05">
+    <xacro:inertial_cylinder mass="0.1" length="${wheel_length}" radius="${wheel_radius}">
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_cylinder>
   </link>
@@ -82,20 +127,28 @@
     <material>Gazebo/Blue</material>
   </gazebo>
 
+
   <!-- Back Right Wheel -->
+  <joint name="right_back_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="right_back_wheel" />
+    <origin xyz="-${wheel_x_spacing} -${wheel_y_spacing} 0" rpy="${pi/2} 0 0" />
+    <axis xyz="0 0 -1" />
+  </joint>
+  
   <link name="right_back_wheel">
     <visual>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
       <material name="blue" />
     </visual>
     <collision>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
     </collision>
-    <xacro:inertial_cylinder mass="0.1" length="0.04" radius="0.05">
+    <xacro:inertial_cylinder mass="0.1" length="${wheel_length}" radius="${wheel_radius}">
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_cylinder>
   </link>
@@ -104,20 +157,33 @@
     <material>Gazebo/Blue</material>
   </gazebo>
 
+
   <!-- Front Right Wheel -->
+  <joint name="right_front_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="right_front_wheel" />
+
+    <!-- transform from parent link to child link -->
+    <!-- joint is located at origin of child link -->
+    <origin xyz="${wheel_x_spacing} -${wheel_y_spacing} 0" rpy="${pi/2} 0 0" />
+
+    <!-- axis of rotation; takes normalized vector of direction to rotate around -->
+    <axis xyz="0 0 -1" />
+  </joint>
+
   <link name="right_front_wheel">
     <visual>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
       <material name="blue" />
     </visual>
     <collision>
       <geometry>
-        <cylinder radius="0.075" length="0.04" />
+        <cylinder radius="${wheel_radius}" length="${wheel_length}" />
       </geometry>
     </collision>
-    <xacro:inertial_cylinder mass="0.1" length="0.04" radius="0.05">
+    <xacro:inertial_cylinder mass="0.1" length="${wheel_length}" radius="${wheel_radius}">
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_cylinder>
   </link>
@@ -125,93 +191,4 @@
   <gazebo reference="right_front_wheel">
     <material>Gazebo/Blue</material>
   </gazebo>
-
-  <!-- ====================== Joints ======================== -->
-  <!-- Chassis Joint -->
-  <joint name="chassis_joint" type="fixed">
-    <parent link="base_link" />
-    <child link="chassis" />
-
-    <!-- separation distance between base_link (middle of chassis) and chassis origin -->
-    <origin xyz="-0.375 0 0" />
-  </joint>
-
-  <!-- Back Left Wheel Joint -->
-  <joint name="left_back_wheel_joint" type="continuous">
-    <parent link="base_link" />
-    <child link="left_back_wheel" />
-
-    <!-- transform from parent link to child link -->
-    <!-- joint is located at origin of child link -->
-    <origin xyz="-${wheel_from_center} 0.175 0" rpy="-${pi/2} 0 0" />
-
-    <!-- axis of rotation; takes normalized vector of direction to rotate around -->
-    <axis xyz="0 0 1" />
-  </joint>
-
-  <!-- Front Left Wheel Joint -->
-  <joint name="left_front_wheel_joint" type="continuous">
-    <parent link="base_link" />
-    <child link="left_front_wheel" />
-
-    <!-- transform from parent link to child link -->
-    <!-- joint is located at origin of child link -->
-    <origin xyz="${wheel_from_center} 0.175 0" rpy="-${pi/2} 0 0" />
-
-    <!-- axis of rotation; takes normalized vector of direction to rotate around -->
-    <axis xyz="0 0 1" />
-  </joint>
-
-  <!-- Back Right Wheel Joint -->
-  <joint name="right_back_wheel_joint" type="continuous">
-    <parent link="base_link" />
-    <child link="right_back_wheel" />
-    <origin xyz="-${wheel_from_center} -0.175 0" rpy="${pi/2} 0 0" />
-    <axis xyz="0 0 -1" />
-  </joint>
-
-  <!-- Front Right Wheel Joint -->
-  <joint name="right_front_wheel_joint" type="continuous">
-    <parent link="base_link" />
-    <child link="right_front_wheel" />
-
-    <!-- transform from parent link to child link -->
-    <!-- joint is located at origin of child link -->
-    <origin xyz="${wheel_from_center} -0.175 0" rpy="${pi/2} 0 0" />
-
-    <!-- axis of rotation; takes normalized vector of direction to rotate around -->
-    <axis xyz="0 0 -1" />
-  </joint>
-
-
-  <!-- Caster Wheel -->
-  <!-- <joint name="caster_wheel_joint" type="fixed">
-    <parent link="chassis" />
-    <child link="caster_wheel" />
-    <origin xyz="0.24 0 0" />
-  </joint> -->
-
-  <!-- <link name="caster_wheel">
-    <visual>
-      <geometry>
-        <sphere radius="0.05" />
-      </geometry>
-      <material name="black" />
-    </visual>
-    <collision>
-      <geometry>
-        <sphere radius="0.05" />
-      </geometry>
-    </collision>
-    <xacro:inertial_sphere mass="0.1" radius="0.05">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:inertial_sphere>
-  </link> -->
-  <!-- 
-  <gazebo reference="caster_wheel">
-    <material>Gazebo/Black</material>
-    <mu1 value="0.001"/>
-    <mu2 value="0.001"/>
-  </gazebo> -->
-
 </robot>
