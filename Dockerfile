@@ -1,6 +1,6 @@
 FROM ros:humble
 
-RUN apt update && apt upgrade -y
+RUN apt update
 RUN apt install -y \
 	ros-humble-rviz2 \
 	ros-humble-demo-nodes-cpp \
@@ -13,8 +13,9 @@ RUN apt install -y \
 	ros-humble-ros2-controllers \
 	ros-humble-gazebo-ros2-control \
 	vim \
-	htop 
-	
+	htop \
+	xterm
+
 WORKDIR /workspace
 
 CMD ["/bin/bash"]
