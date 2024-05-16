@@ -1,7 +1,6 @@
 FROM ros:humble
 
-RUN apt update
-RUN apt install -y \
+RUN apt update && apt install -y \
 	ros-humble-rviz2 \
 	ros-humble-demo-nodes-cpp \
 	ros-humble-demo-nodes-py \
