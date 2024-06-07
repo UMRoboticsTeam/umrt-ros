@@ -1,7 +1,6 @@
 install/
 log/
 build/
-src/depthai-ros
 
 # Ignore generated docs
 *.dox
