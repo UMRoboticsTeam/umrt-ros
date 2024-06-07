@@ -3,7 +3,6 @@ xhost +local:docker
 
 docker run \
 	-it \
-	--net \
 	-e DISPLAY \
 	-e QT_X11_NO_MITSHM=1 \
 	--volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
