@@ -2,6 +2,7 @@ ARG ROS_DISTRO=humble
 FROM ros:${ROS_DISTRO}
 COPY requirements.txt /opt/app/requirements.txt
 LABEL authors="Syed Abraham Ahmed, Nikolaus Reichert, Alessandro Potenza"
+SHELL ["/bin/bash", "-c"]
 
 # Environment Variables
 ENV WS=/workspace
