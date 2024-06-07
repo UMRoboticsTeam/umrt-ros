@@ -30,6 +30,3 @@ qtcreator-*
 # Colcon custom files
 COLCON_IGNORE
 AMENT_IGNORE
-
-#Container Start Script
-start_container.sh
