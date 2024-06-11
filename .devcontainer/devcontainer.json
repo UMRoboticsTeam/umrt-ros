@@ -28,6 +28,9 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash"
+			},
 			"extensions": [
 				"ms-python.python",
 				"ms-iot.vscode-ros",
