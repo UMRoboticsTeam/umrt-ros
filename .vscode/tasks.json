@@ -11,6 +11,25 @@
         "label": "test",
         "type": "shell",
         "command": "colcon test && colcon test-result"
+      },
+      {
+        "type": "colcon",
+        "args": [
+          "build",
+          "--symlink-install",
+          "--event-handlers",
+          "console_cohesion+",
+          "--base-paths",
+          "/workspace",
+          "--cmake-args",
+          "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "problemMatcher": [
+          "$catkin-gcc"
+        ],
+        "group": "build",
+        "label": "colcon: build"
       }
     ]
   }
