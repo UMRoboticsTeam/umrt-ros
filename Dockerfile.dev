@@ -62,8 +62,8 @@ RUN apt install -y --no-install-recommends \
 	libgirepository1.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# # Setup
-# RUN pip install -r /opt/app/requirements.txt
+# Setup
+RUN pip install -r /opt/app/requirements.txt
 
 WORKDIR /workspace
 
