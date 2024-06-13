@@ -1,14 +1,28 @@
-ARG ROS_DISTRO=humble
-FROM ros:${ROS_DISTRO}
+FROM ros:humble
+ARG USERNAME=USERNAME
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+
+# Used for depthai stuff. -njreichert
 COPY requirements.txt /opt/app/requirements.txt
-LABEL authors="Syed Abraham Ahmed, Nikolaus Reichert, Alessandro Potenza"
-SHELL ["/bin/bash", "-c"]
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # Environment Variables
 ENV WS=/workspace
 
+RUN apt update
+
 # Humble Stuff
-RUN apt update && apt install -y \
+RUN apt install -y \
 	ros-humble-rviz2 \
 	ros-humble-demo-nodes-cpp \
 	ros-humble-demo-nodes-py \
@@ -31,7 +45,7 @@ RUN apt update && apt install -y \
 	ros-humble-rviz-imu-plugin
 
 # ROS2 Dependancies
-RUN apt update && apt install -y --no-install-recommends \
+RUN apt install -y --no-install-recommends \
 	vim \
 	htop \
 	xterm \
@@ -48,8 +62,12 @@ RUN apt update && apt install -y --no-install-recommends \
 	libgirepository1.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Setup
-RUN pip install -r /opt/app/requirements.txt
+# # Setup
+# RUN pip install -r /opt/app/requirements.txt
 
 WORKDIR /workspace
+
+ENV SHELL /bin/bash
+
+USER $USERNAME
 CMD ["/bin/bash"]
