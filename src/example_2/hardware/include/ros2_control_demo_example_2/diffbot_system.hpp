@@ -32,6 +32,8 @@
 
 #include "ros2_control_demo_example_2/visibility_control.h"
 
+#include "PiPCA9685/PCA9685.h"
+
 namespace ros2_control_demo_example_2
 {
 class DiffBotSystemHardware : public hardware_interface::SystemInterface
@@ -74,6 +76,9 @@ private:
   std::vector<double> hw_commands_;
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
+
+  // PWM control board.
+  PiPCA9685::PCA9685 pwm_driver_;
 };
 
 }  // namespace ros2_control_demo_example_2

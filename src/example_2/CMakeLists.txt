@@ -19,18 +19,21 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-
 ## COMPILE
 add_library(
   ros2_control_demo_example_2
   SHARED
   hardware/diffbot_system.cpp
+  hardware/I2CPeripheral.cpp
+  hardware/PCA9685.cpp
 )
+
 target_compile_features(ros2_control_demo_example_2 PUBLIC cxx_std_17)
 target_include_directories(ros2_control_demo_example_2 PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
 $<INSTALL_INTERFACE:include/ros2_control_demo_example_2>
 )
+
 ament_target_dependencies(
   ros2_control_demo_example_2 PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
