@@ -42,9 +42,13 @@ RUN apt install -y \
 	ros-humble-diagnostic-updater \
 	ros-humble-depth-image-proc \
 	ros-humble-foxglove-msgs \
-	ros-humble-rviz-imu-plugin
-
-# ROS2 Dependancies
+	ros-humble-rviz-imu-plugin \
+# Humble - PWM Driver dependencies. -njreichert
+	pybind11-dev \
+	python3-distutils \
+	python3-dev \
+	libi2c-dev
+# ROS2 Dependencies
 RUN apt install -y --no-install-recommends \
 	vim \
 	htop \
