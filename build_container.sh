@@ -2,6 +2,6 @@
 
 docker build \
     -t umrt-ros \
-    --build-arg USERNAME=${USER}
+    --build-arg USERNAME=${USER} \
     -f $1 \
     .
