@@ -1,21 +1,10 @@
-FROM ros:humble
-# ARG USERNAME=USERNAME
-# ARG USER_UID=1000
-# ARG USER_GID=${USER_UID}
+FROM ros:humble as robot_image
+ARG USERNAME=USERNAME
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
 
 # Used for depthai stuff. -njreichert
 COPY requirements.txt /opt/app/requirements.txt
-
-# for the Pi we are using root since the workspace should be somewhat "read-only". -njreichert
-# # Create the user
-# RUN groupadd --gid $USER_GID $USERNAME \
-#     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-#     #
-#     # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
-#     && apt-get update \
-#     && apt-get install -y sudo \
-#     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-#     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # Environment Variables
 ENV WS=/workspace
@@ -26,11 +15,9 @@ RUN apt update
 # Whenever adding deps add a comment before to note what they are for. -njreichert
 RUN apt install -y \
 # General ROS deps - control, teleop, xacro, etc... -njreichert
-	ros-humble-rviz2 \
 	ros-humble-demo-nodes-cpp \
 	ros-humble-demo-nodes-py \
 	ros-humble-xacro \
-	ros-humble-joint-state-publisher-gui \
 	ros-humble-teleop-twist-keyboard \
 	ros-humble-ros2-control \
 	ros-humble-ros2-controllers \
@@ -80,4 +67,30 @@ WORKDIR /workspace
 ENV SHELL /bin/bash
 
 # USER $USERNAME
+CMD ["/bin/bash"]
+
+FROM robot_image
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+RUN apt update
+RUN apt install -y \
+	ros-humble-rviz2 \
+	ros-humble-joint-state-publisher-gui \
+    ros-humble-gazebo-ros-pkgs \
+    ros-humble-gazebo-ros2-control 
+
+WORKDIR /workspace
+
+ENV SHELL /bin/bash
+
+USER $USERNAME
 CMD ["/bin/bash"]
