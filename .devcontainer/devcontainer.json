@@ -3,7 +3,7 @@
     "privileged": true,
     "remoteUser": "${env:USERNAME}",
     "build": {
-        "dockerfile": "../Dockerfile.dev",
+        "dockerfile": "../Dockerfile",
         "args": {
             "USERNAME": "${env:USERNAME}"
         }
