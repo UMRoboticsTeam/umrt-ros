@@ -35,8 +35,9 @@
         "--security-opt", "seccomp=unconfined"
     ],
     "mounts": [
-       "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
-        "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached"
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+        "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
+        "source=/dev/input,target=/dev/input,type=bind,consistency=cached"
     ],
     "postCreateCommand": "sudo rosdep update && sudo apt update && sudo rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /workspace"
 }

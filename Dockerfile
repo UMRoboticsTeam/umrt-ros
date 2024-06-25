@@ -71,6 +71,18 @@ CMD ["/bin/bash"]
 
 FROM robot_image
 
+RUN apt update
+RUN apt install -y \
+	# Visualization and simulation tools. -njreichert
+	ros-humble-rviz2 \
+	ros-humble-joint-state-publisher-gui \
+    ros-humble-gazebo-ros-pkgs \
+    ros-humble-gazebo-ros2-control \
+	# Tools for working with / connecting to joysticks & gamepads. -njreichert
+	joystick \
+	jstest-gtk \
+	evtest
+
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
@@ -81,12 +93,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-RUN apt update
-RUN apt install -y \
-	ros-humble-rviz2 \
-	ros-humble-joint-state-publisher-gui \
-    ros-humble-gazebo-ros-pkgs \
-    ros-humble-gazebo-ros2-control 
+RUN usermod -aG messagebus $USERNAME 
 
 WORKDIR /workspace
 

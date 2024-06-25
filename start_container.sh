@@ -11,6 +11,7 @@ docker run \
 	--volume="/dev/bus/usb:/dev/bus/usb" \
 	--device-cgroup-rule="c 189:* rw" \
 	--device /dev/dri \
+	--device /dev/input \
 	--rm \
 	--network=host \
 	--pid=host \
