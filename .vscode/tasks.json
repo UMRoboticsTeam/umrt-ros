@@ -5,7 +5,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "source /opt/ros/humble/setup.bash && colcon build --cmake-args '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'"
+            "command": "source /opt/ros/humble/setup.bash && COLCON_BUILD_EXECUTOR=parallel /workspace/build.sh"
         },
         {
             "label": "test",
