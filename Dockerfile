@@ -81,7 +81,11 @@ RUN apt install -y \
 	# Tools for working with / connecting to joysticks & gamepads. -njreichert
 	joystick \
 	jstest-gtk \
-	evtest
+	evtest \
+	# ROS2 Joystick utilities. -njreichert
+	ros-humble-joy \
+	ros-humble-joy-teleop \
+	ros-humble-teleop-twist-joy
 
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \

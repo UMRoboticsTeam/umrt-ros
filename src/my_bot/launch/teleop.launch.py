@@ -12,19 +12,28 @@ def generate_launch_description():
 
     package_name = 'my_bot'
 
-    teleop_node = Node(
-        package="teleop_twist_keyboard",
-        executable="teleop_twist_keyboard",
-        remappings=[
-            # diff_drive_spawner in ./launch_sim.launch.py creates this topic. -njreichert
-            ("/cmd_vel", "diff_controller/cmd_vel_unstamped")
-        ],
-        # Launch in an xterm session as ros2 launch doesn't support running 
-        # nodes that require stdin through a launch file. -njreichert
-        prefix="xterm -e",
+    joystick_control = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory(package_name),
+            "launch",
+            "joystick.launch.py",
+        )]),
     )
+
+    # teleop_node = Node(
+    #     package="teleop_twist_keyboard",
+    #     executable="teleop_twist_keyboard",
+    #     remappings=[
+    #         # diff_drive_spawner in ./launch_sim.launch.py creates this topic. -njreichert
+    #         ("/cmd_vel", "diff_controller/cmd_vel_unstamped")
+    #     ],
+    #     # Launch in an xterm session as ros2 launch doesn't support running 
+    #     # nodes that require stdin through a launch file. -njreichert
+    #     prefix="xterm -e",
+    # )
 
     # Launch them all!
     return LaunchDescription([
-        teleop_node,
+        joystick_control,
+        # teleop_node,
     ])
