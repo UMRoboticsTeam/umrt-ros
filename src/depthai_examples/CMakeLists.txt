@@ -93,24 +93,9 @@ macro(dai_add_node_ros2 node_name node_src)
 
 endmacro()
 
-
-dai_add_node_ros2(crop_control_service src/crop_control_service.cpp)
 dai_add_node_ros2(mobilenet_node src/mobilenet_publisher.cpp)
-dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
-dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
-dai_add_node_ros2(feature_tracker src/feature_tracker_publisher.cpp)
-dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
-dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
-dai_add_node_ros2(yolov4_node src/yolov4_publisher.cpp)
-dai_add_node_ros2(tracker_yolov4_node src/tracker_yolov4_publisher.cpp)
-dai_add_node_ros2(tracker_yolov4_spatial_node src/tracker_yolov4_spatial_publisher.cpp)
 
 target_compile_definitions(mobilenet_node PRIVATE BLOB_NAME="${mobilenet_blob_name}")
-target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
-target_compile_definitions(yolov4_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
-target_compile_definitions(stereo_inertial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
-target_compile_definitions(tracker_yolov4_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
-target_compile_definitions(tracker_yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
 
 if($ENV{ROS_DISTRO} STREQUAL "galactic")
   target_compile_definitions(rgb_stereo_node PRIVATE IS_GALACTIC)
@@ -124,16 +109,7 @@ install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
 FILES_MATCHING PATTERN "*.py")
 
 install(TARGETS
-        crop_control_service
         mobilenet_node
-        rgb_stereo_node
-        stereo_inertial_node
-        stereo_node
-        yolov4_spatial_node
-        yolov4_node
-        feature_tracker
-        tracker_yolov4_node
-        tracker_yolov4_spatial_node
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
