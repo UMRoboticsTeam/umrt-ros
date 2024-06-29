@@ -11,7 +11,11 @@ def generate_launch_description():
     ########################
     # EXTERNAL LAUNCH FILES
     ########################
-
+    camera_launch_directory = os.path.join(get_package_share_directory('depthai_examples'),
+                                           'launch/mobile_publisher.launch.py')
+    camera_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(camera_launch_directory)
+    )
     ########################
     # NODE DEFINITIONS
     ########################
@@ -19,6 +23,6 @@ def generate_launch_description():
     ########################
     # LAUNCH
     ########################
-    launch_entities = []
+    launch_entities = [camera_launch]
 
     return LaunchDescription(launch_entities)
