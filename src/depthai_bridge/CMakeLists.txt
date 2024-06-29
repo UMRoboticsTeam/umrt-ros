@@ -65,15 +65,8 @@ include_directories(
 )
 
 file(GLOB LIB_SRC
-"src/DisparityConverter.cpp"
 "src/ImageConverter.cpp"
 "src/ImgDetectionConverter.cpp"
-"src/SpatialDetectionConverter.cpp"
-"src/ImuConverter.cpp"
-"src/TFPublisher.cpp"
-"src/TrackedFeaturesConverter.cpp"
-"src/TrackDetectionConverter.cpp"
-"src/TrackSpatialDetectionConverter.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
@@ -114,10 +107,6 @@ install(TARGETS depthai_bridge
 )
 install(EXPORT depthai_bridgeTargets
       DESTINATION share/${PROJECT_NAME}/cmake)
-
-
-
-install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_export_libraries(depthai_bridge)
