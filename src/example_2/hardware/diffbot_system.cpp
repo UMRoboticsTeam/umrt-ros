@@ -185,10 +185,10 @@ hardware_interface::return_type DiffBotSystemHardware::read(
     // Simply integrates
     hw_positions_[i] = hw_positions_[i] + period.seconds() * hw_velocities_[i];
 
-    // RCLCPP_INFO(
-    //   rclcpp::get_logger("DiffBotSystemHardware"),
-    //   "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
-    //   hw_velocities_[i], info_.joints[i].name.c_str());
+    RCLCPP_INFO(
+      rclcpp::get_logger("DiffBotSystemHardware"),
+      "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
+      hw_velocities_[i], info_.joints[i].name.c_str());
   }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
@@ -199,24 +199,17 @@ hardware_interface::return_type ros2_control_demo_example_2 ::DiffBotSystemHardw
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  // RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Writing...");
+  RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Writing...");
 
   for (auto i = 0u; i < hw_commands_.size(); i++)
   {
     // Simulate sending commands to the hardware
-    // RCLCPP_INFO(
-    //   rclcpp::get_logger("DiffBotSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
-    //   info_.joints[i].name.c_str());
+    RCLCPP_INFO(
+      rclcpp::get_logger("DiffBotSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
+      info_.joints[i].name.c_str());
 
     hw_velocities_[i] = hw_commands_[i];
   }
-
-  RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Running PiPCA9685 test...");
-
-  this->pwm_driver_.set_pwm_ms(0, 1.5);
-  
-  RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Done running on PiPCA9685");
-
   RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Joints successfully written!");
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
