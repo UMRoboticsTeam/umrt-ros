@@ -1,4 +1,5 @@
 PyGObject==3.46.0
 depthai==2.24.0.0
 opencv-python
+pyserial
 
