@@ -9,6 +9,8 @@
           <plugin>ros2_control_demo_example_2/DiffBotSystemHardware</plugin>
           <param name="example_param_hw_start_duration_sec">0</param>
           <param name="example_param_hw_stop_duration_sec">3.0</param>
+
+          <param name="param_wheel_radius">0.1184</param>
         </hardware>
       </xacro:unless>
       <xacro:if value="${use_mock_hardware}">

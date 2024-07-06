@@ -32,6 +32,14 @@
 
 #include "ros2_control_demo_example_2/visibility_control.h"
 
+#include "PiPCA9685/PCA9685.h"
+
+// This is a hacky workaround to get velocity commands working on the robot. we
+// are provided per-wheel angular velocitites, which we convert to a +/- 1 m/s
+// velocity internally, and then scale that to a pulse width between 1 and 2 ms.
+// See wiki.ros.org/diff_drive_controller Section 1.4. -njreichert
+// #define WHEEL_RADIUS 0.1143 // m
+
 namespace ros2_control_demo_example_2
 {
 class DiffBotSystemHardware : public hardware_interface::SystemInterface
@@ -65,15 +73,25 @@ public:
   hardware_interface::return_type write(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
+  void set_pwm_wheel_speed(int channel, double angular_speed);
+
 private:
   // Parameters for the DiffBot simulation
   double hw_start_sec_;
   double hw_stop_sec_;
 
+  // This is a hacky workaround to get velocity commands working on the robot. we
+  // are provided per-wheel angular velocitites, which we convert to a +/- 1 m/s
+  // velocity internally, and then scale that to a pulse width between 1 and 2 ms.
+  // See wiki.ros.org/diff_drive_controller Section 1.4. -njreichert
+  double wheel_radius_;
+
   // Store the command for the simulated robot
   std::vector<double> hw_commands_;
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
+
+  PiPCA9685::PCA9685 pwm_device_;
 };
 
 }  // namespace ros2_control_demo_example_2

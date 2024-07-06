@@ -20,10 +20,14 @@
 #include <limits>
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 #include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+
+#define PWM_NEUTRAL 1.5
+#define PWM_AMPLITUDE 0.5
 
 namespace ros2_control_demo_example_2
 {
@@ -43,6 +47,15 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
   hw_stop_sec_ =
     hardware_interface::stod(info_.hardware_parameters["example_param_hw_stop_duration_sec"]);
   // END: This part here is for exemplary purposes - Please do not copy to your production code
+
+  wheel_radius_ = hardware_interface::stod(info_.hardware_parameters.at("param_wheel_radius"));
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("DiffBotSystemHardware"),
+    "Wheel Radius: %f",
+    wheel_radius_
+  );
+
   hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -195,22 +208,41 @@ hardware_interface::return_type DiffBotSystemHardware::read(
   return hardware_interface::return_type::OK;
 }
 
+void ros2_control_demo_example_2::DiffBotSystemHardware::set_pwm_wheel_speed(
+  int channel, double angular_speed)
+{
+  // Between -1 and 1 m/s by definition in diffbot_controllers.yaml.
+  double linear_wheel_speed = std::clamp(angular_speed * this->wheel_radius_, -1.0, 1.0);
+
+  // Typical PWM Servo control assumes:
+  // - 1.0 == Full reverse
+  // - 1.5 == Neutral / stopped
+  // - 2.0 == Full forward
+  double motor_pulse_width = std::clamp(PWM_NEUTRAL + (linear_wheel_speed * PWM_AMPLITUDE), 1.0, 2.0);
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("DiffBotSystemHardware"),
+    "Setting PWM channel %d to %f!", 
+    channel, motor_pulse_width);
+  
+  this->pwm_device_.set_pwm_ms(channel, motor_pulse_width);
+}
+
 hardware_interface::return_type ros2_control_demo_example_2 ::DiffBotSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Writing...");
 
   for (auto i = 0u; i < hw_commands_.size(); i++)
   {
-    // Simulate sending commands to the hardware
     RCLCPP_INFO(
-      rclcpp::get_logger("DiffBotSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
+      rclcpp::get_logger("DiffBotSystemHardware"), "Command %.5f for '%s'!", hw_commands_[i],
       info_.joints[i].name.c_str());
 
     hw_velocities_[i] = hw_commands_[i];
+
+    this->set_pwm_wheel_speed(i, hw_commands_[i]);
   }
-  RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Joints successfully written!");
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;

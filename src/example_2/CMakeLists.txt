@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(ros2_control_demo_example_2 LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra)
