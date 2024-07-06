@@ -18,7 +18,7 @@ front_diffbot_base_controller:
 
     wheel_separation: 0.10
     #wheels_per_side: 1  # actually 2, but both are controlled by 1 signal
-    wheel_radius: 0.015
+    wheel_radius: 0.1143
 
     wheel_separation_multiplier: 1.0
     left_wheel_radius_multiplier: 1.0
@@ -65,7 +65,7 @@ rear_diffbot_base_controller:
 
     wheel_separation: 0.10
     #wheels_per_side: 1  # actually 2, but both are controlled by 1 signal
-    wheel_radius: 0.015
+    wheel_radius: 0.1143
 
     wheel_separation_multiplier: 1.0
     left_wheel_radius_multiplier: 1.0
