@@ -15,7 +15,7 @@ diffbot_base_controller:
 
     use_stamped_vel: false
 
-    wheel_separation: 0.10
+    wheel_separation: 0.6954 # 2 * the value of y_offset in diffbot_description.urdf.xacro -njreichert
     wheels_per_side: 2  # actually 2, but both are controlled by 1 signal
     wheel_radius: 0.1143
 
