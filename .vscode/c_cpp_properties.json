@@ -1,31 +1,18 @@
 {
-    "configurations": [
-        {
-            "browse": {
-                "databaseFilename": "${default}",
-                "limitSymbolsToIncludedHeaders": false
-            },
-            "includePath": [
-                "/workspace/install/ros2_control_demo_example_2/include/**",
-                "/workspace/install/plotjuggler/include/**",
-                "/workspace/install/depthai_ros_driver/include/**",
-                "/workspace/install/depthai_filters/include/**",
-                "/workspace/install/depthai_bridge/include/**",
-                "/workspace/install/depthai_ros_msgs/include/**",
-                "/opt/ros/humble/include/**",
-                "/workspace/src/PiPCA9685/include/**",
-                "/workspace/src/depthai_bridge/include/**",
-                "/workspace/src/depthai_filters/include/**",
-                "/workspace/src/depthai_ros_driver/include/**",
-                "/usr/include/**"
-            ],
-            "name": "ROS",
-            "intelliSenseMode": "gcc-x64",
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu11",
-            "cppStandard": "c++17",
-            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [],
+      "compileCommands": "/workspace/build/compile_commands.json",
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
 }
