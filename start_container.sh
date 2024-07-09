@@ -15,5 +15,5 @@ docker run \
 	--rm \
 	--network=host \
 	--pid=host \
-	--name $1 \
-	umrt-ros
+	--name $2 \
+	$1
