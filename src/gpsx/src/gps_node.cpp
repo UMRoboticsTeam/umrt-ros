@@ -182,7 +182,7 @@ class GPSPublisher : public rclcpp::Node
     bool newdata_;
     bool run_;
 
-    int init_counter_ = 0;
+    int unter_ = 0;
 
 };
  
@@ -672,7 +672,7 @@ void GPSPublisher::timer_callback()
   auto message = gpsx::msg::Gpsx();
   if(!initialized_)
   {
-    if (init_counter >= 60)
+    if (init_counter_ >= 60)
     {
       init_counter_ = 0;
       // retry to establish connection
