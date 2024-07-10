@@ -182,7 +182,7 @@ class GPSPublisher : public rclcpp::Node
     bool newdata_;
     bool run_;
 
-    int unter_ = 0;
+    int init_counter_ = 0;
 
 };
  
