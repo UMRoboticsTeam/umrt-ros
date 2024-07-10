@@ -18,6 +18,17 @@
     <xacro:property name="y_offset" value="${0.078 + (wheel_length / 2) + (base_width / 2)}" />
     <xacro:property name="z_offset" value="-0.045" /> <!-- Space btw top of beam and the each joint -->
 
+    <xacro:property name="camera_name"   default="oak" />
+    <xacro:property name="camera_model"  default="OAK-D" />
+    <xacro:property name="base_frame"    default="oak-d_frame" />
+    <xacro:property name="parent_frame"  default="base_link" /> <!-- Connecting the camera directly to the front of the robot for now. -njreichert -->
+    <xacro:property name="cam_pos_x"     default="${(base_length / 2) + 0.01}" />
+    <xacro:property name="cam_pos_y"     default="0.0" />
+    <xacro:property name="cam_pos_z"     default="${base_height / 2}" />
+    <xacro:property name="cam_roll"      default="0.0" />
+    <xacro:property name="cam_pitch"     default="0.0" />
+    <xacro:property name="cam_yaw"       default="0.0" />
+
     <!-- Base Link -->
     <link name="${prefix}base_link">
       <collision>
@@ -165,5 +176,13 @@
         <origin xyz="0.0 0.0 0.0" />
       </xacro:inertial_cylinder>
     </link>
+
+    <!-- Camera -->
+    <xacro:include filename="$(find depthai_descriptions)/urdf/include/depthai_macro.urdf.xacro"/>
+    <xacro:depthai_camera camera_name="${camera_name}" parent="${parent_frame}"
+      camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}"
+      cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}"
+      cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}"/>
+
   </xacro:macro>
 </robot>
