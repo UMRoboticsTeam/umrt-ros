@@ -182,6 +182,8 @@ class GPSPublisher : public rclcpp::Node
     bool newdata_;
     bool run_;
 
+    int init_counter_ = 0;
+
 };
  
 void GPSPublisher::run(void)
@@ -670,10 +672,19 @@ void GPSPublisher::timer_callback()
   auto message = gpsx::msg::Gpsx();
   if(!initialized_)
   {
-    // retry to establish connection in 1 second
-    RCLCPP_INFO(this->get_logger(), "Retry to open port on next timer slot second"); 
-    if(openConnection()<0)
+    if (init_counter >= 60)
+    {
+      init_counter_ = 0;
+      // retry to establish connection
+      RCLCPP_INFO(this->get_logger(), "Retry to open port"); 
+      if(openConnection()<0)
+        return;
+    }
+    else
+    {
+      init_counter_++;
       return;
+    }
   }
   // read and interprete the messages recieved
   readMessage();
