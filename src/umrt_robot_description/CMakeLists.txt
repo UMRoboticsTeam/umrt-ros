@@ -24,7 +24,7 @@ if(BUILD_TESTING)
 endif()
 
 install(
-  DIRECTORY description
+  DIRECTORY description launch
   DESTINATION share/${PROJECT_NAME}
 )
 
