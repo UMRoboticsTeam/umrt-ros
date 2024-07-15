@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="inertial_macros.xacro"/>
+
+  <xacro:macro name="diffbot" params="prefix">
+
+    <!-- Constants for robot dimensions -->
+    <xacro:property name="PI" value="3.1415926535897931"/>
+    <xacro:property name="base_mass" value="0.3" /> <!-- arbitrary value for base mass -->
+    <xacro:property name="base_width" value="0.420" />
+    <xacro:property name="base_length" value="0.800" />
+    <xacro:property name="base_height" value="0.300" />
+    <xacro:property name="wheel_mass" value="0.3" /> <!-- arbitrary value for wheel mass -->
+    <xacro:property name="wheel_length" value="0.1194" />
+    <xacro:property name="wheel_radius" value="0.1143" />
+    <xacro:property name="x_offset" value="${(base_length / 2) - 0.016}" /> <!-- 1.6 cm from center of wheel to front / rear face. -->
+    <xacro:property name="y_offset" value="${0.078 + (wheel_length / 2) + (base_width / 2)}" />
+    <xacro:property name="z_offset" value="-0.045" /> <!-- Space btw top of beam and the each joint -->
+
+    <xacro:property name="camera_name"   default="oak" />
+    <xacro:property name="camera_model"  default="OAK-D" />
+    <xacro:property name="base_frame"    default="oak-d_frame" />
+    <xacro:property name="parent_frame"  default="base_link" /> <!-- Connecting the camera directly to the front of the robot for now. -njreichert -->
+    <xacro:property name="cam_pos_x"     default="${(base_length / 2) + 0.01}" />
+    <xacro:property name="cam_pos_y"     default="0.0" />
+    <xacro:property name="cam_pos_z"     default="${base_height / 2}" />
+    <xacro:property name="cam_roll"      default="0.0" />
+    <xacro:property name="cam_pitch"     default="0.0" />
+    <xacro:property name="cam_yaw"       default="0.0" />
+
+    <!-- Base Link -->
+    <link name="${prefix}base_link">
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${base_length} ${base_width} ${base_height}"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin xyz="0 0 ${base_height/2}" rpy="0 0 0"/>
+        <geometry>
+          <box size="${base_length} ${base_width} ${base_height}"/>
+        </geometry>
+        <material name="orange"/>
+      </visual>
+
+      <xacro:inertial_box mass="${base_mass}" x="${base_length}" y="${base_width}" z="${base_height}">
+        <origin xyz="0.0 0.0 0.0"/>
+      </xacro:inertial_box>
+    </link>
+
+    <!-- front left wheel -->
+    <joint name="${prefix}front_left_wheel_joint" type="continuous">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}front_left_wheel"/>
+      <origin xyz="${x_offset} ${y_offset} ${z_offset}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <dynamics damping="0.2"/>
+      <limit effort="100" velocity="1.0"/>
+    </joint>
+
+    <link name="${prefix}front_left_wheel">
+      <collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+
+      <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+        <origin xyz="0.0 0.0 0.0" />
+      </xacro:inertial_cylinder>
+
+    </link>
+
+    <!-- front right wheel -->
+    <joint name="${prefix}front_right_wheel_joint" type="continuous">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}front_right_wheel"/>
+      <origin xyz="${x_offset} -${y_offset} ${z_offset}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <dynamics damping="0.2"/>
+      <limit effort="100" velocity="1.0"/>
+    </joint>
+
+    <link name="${prefix}front_right_wheel">
+      <collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+
+      <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+        <origin xyz="0.0 0.0 0.0" />
+      </xacro:inertial_cylinder>
+    </link>
+
+    <!-- rear left wheel -->
+    <joint name="${prefix}rear_left_wheel_joint" type="continuous">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}rear_left_wheel"/>
+      <origin xyz="-${x_offset} ${y_offset} ${z_offset}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <dynamics damping="0.2"/>
+      <limit effort="100" velocity="1.0"/>
+    </joint>
+
+    <link name="${prefix}rear_left_wheel">
+      <collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+
+      <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+        <origin xyz="0.0 0.0 0.0" />
+      </xacro:inertial_cylinder>
+
+    </link>
+
+    <!-- right wheel -->
+    <joint name="${prefix}rear_right_wheel_joint" type="continuous">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}rear_right_wheel"/>
+      <origin xyz="-${x_offset} -${y_offset} ${z_offset}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <dynamics damping="0.2"/>
+      <limit effort="100" velocity="1.0"/>
+    </joint>
+
+    <link name="${prefix}rear_right_wheel">
+      <collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+
+      <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+        <origin xyz="0.0 0.0 0.0" />
+      </xacro:inertial_cylinder>
+    </link>
+
+    <!-- Camera -->
+    <xacro:include filename="$(find depthai_descriptions)/urdf/include/depthai_macro.urdf.xacro"/>
+    <xacro:depthai_camera camera_name="${camera_name}" parent="${parent_frame}"
+      camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}"
+      cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}"
+      cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}"/>
+
+  </xacro:macro>
+</robot>

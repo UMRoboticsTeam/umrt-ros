@@ -18,6 +18,7 @@ def generate_launch_description():
                                 
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
     
+    # Deprecated. Hardcoding these values as they are tied to the physical design of the robot. -njreichert
     camera_model     = LaunchConfiguration('camera_model',  default = 'OAK-D')
     tf_prefix        = LaunchConfiguration('tf_prefix',   default = 'oak')
     base_frame       = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
@@ -105,24 +106,17 @@ def generate_launch_description():
         default_value=resourceBaseFolder,
         description='Path to the resources folder which contains the default blobs for the network')
 
-    urdf_launch = IncludeLaunchDescription(
-                            launch_description_sources.PythonLaunchDescriptionSource(
-                                    os.path.join(urdf_launch_dir, 'urdf_launch.py')),
-                            launch_arguments={'tf_prefix'   : tf_prefix,
-                                              'camera_model': camera_model,
-                                              'base_frame'  : base_frame,
-                                              'parent_frame': parent_frame,
-                                              'cam_pos_x'   : cam_pos_x,
-                                              'cam_pos_y'   : cam_pos_y,
-                                              'cam_pos_z'   : cam_pos_z,
-                                              'cam_roll'    : cam_roll,
-                                              'cam_pitch'   : cam_pitch,
-                                              'cam_yaw'     : cam_yaw}.items())
+    # urdf_launch = IncludeLaunchDescription(
+    #     launch_description_sources.PythonLaunchDescriptionSource(os.path.join(urdf_launch_dir, 'urdf_launch.py')),
+    #         launch_arguments={
+    #             'tf_prefix'   : 'oak',
+    #         }.items(),
+    #     )
 
     mobilenet_node = launch_ros.actions.Node(
             package='depthai_examples', executable='mobilenet_node',
             output='screen',
-            parameters=[{'tf_prefix': tf_prefix},
+            parameters=[{'tf_prefix': 'oak'},
                         {'camera_param_uri': camera_param_uri},
                         {'sync_nn': sync_nn},
                         {'nnName': nnName},
@@ -152,7 +146,7 @@ def generate_launch_description():
     ld.add_action(declare_resourceBaseFolder_cmd)
     
     ld.add_action(mobilenet_node)
-    ld.add_action(urdf_launch)
+    # ld.add_action(urdf_launch)
 
     # ld.add_action(metric_converter_node)
     # ld.add_action(point_cloud_node)

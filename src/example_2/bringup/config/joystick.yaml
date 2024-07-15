@@ -1,0 +1,28 @@
+joy_node:
+  ros__parameters:
+    device_id: 0
+    deadzone: 0.1
+    autorepeat_rate: 20.0 # ms
+
+teleop_node:
+  ros__parameters:
+    # These assume an Xbox One S controller on Linux. -njreichert
+    axis_linear:
+      x: 1 # Axis 1
+    scale_linear:
+      x: 0.5 # m/s
+    scale_linear_turbo:
+      x: 1.0 # m/s
+
+    axis_angular:
+      yaw: 0 # Axis 0
+    scale_angular:
+      yaw: 0.5 # rad/s
+    scale_angular_turbo:
+      yaw: 1.0 # rad/s
+
+    enable_button: 4 # LB
+    enable_turbo_button: 5 # RB
+
+    require_enable_button: true # send 0 m/s and 0 rad/s if button removed.
+

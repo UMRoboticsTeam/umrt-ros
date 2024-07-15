@@ -4,14 +4,16 @@
 build_type=Release
 install_type=symlink-install
 
-#Echo Build & Install Type
-echo "Build type: $build_type, Install_type: $install_type"
+if [[ -z "${COLCON_BUILD_EXECUTOR}" ]]; then
+    COLCON_BUILD_EXECUTOR=sequential
+fi
 
-#Build In Sequential
-echo "Sequential Build" && \
-MAKEFLAGS="-j1 -l1" colcon build \
+#Echo Build & Install Type
+echo "Build type: $build_type, Install_type: $install_type, Executor: $COLCON_BUILD_EXECUTOR"
+
+colcon build \
     --$install_type \
-    --executor sequential \
+    --executor $COLCON_BUILD_EXECUTOR \
     --cmake-args -DCMAKE_BUILD_TYPE=$build_type \
     --cmake-args -DBUILD_TESTING=OFF \
     --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \

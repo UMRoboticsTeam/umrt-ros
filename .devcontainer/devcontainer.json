@@ -1,45 +1,42 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
-{
-	"name": "Existing Dockerfile",
-	"build": {
-		// Sets the run context to one level up instead of the .devcontainer folder.
-		"context": "..",
-		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-		"dockerfile": "../Dockerfile.dev"
-	},
-
-	"containerEnv": {
-		"SHELL": "/bin/bash"
-	},
-
-	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-	"workspaceFolder": "/workspace",
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Uncomment the next line to run commands after the container is created.
-	// "postCreateCommand": "cat /etc/os-release",
-
-	// Configure tool-specific properties.
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-python.python",
-				"ms-iot.vscode-ros",
-				"ms-vscode.cpptools-extension-pack",
-				"ms-vscode.vscode-serial-monitor",
-				"ms-vscode.hexeditor",
-				"redhat.vscode-xml",
-				"redhat.vscode-yaml"
-			]
-		}
-	}
-
-	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "devcontainer"
+{ 
+    "name": "ROS 2 Development Container",
+    "privileged": true,
+    "remoteUser": "${env:USERNAME}",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "args": {
+            "USERNAME": "${env:USERNAME}"
+        }
+    },
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "customizations": {
+        "vscode": {
+            "extensions":[
+                "ms-azuretools.vscode-docker",
+                "ms-python.python",
+                "twxs.cmake",
+                "ms-iot.vscode-ros",
+                "smilerobotics.urdf",
+                "ms-vscode.cpptools-extension-pack"
+            ]
+        }
+    },
+    "containerEnv": {
+        "DISPLAY": "unix:0",
+        "ROS_DOMAIN_ID": "8"
+    },
+    "runArgs": [
+        "--net=host",
+        "-e", "DISPLAY=${env:DISPLAY}",
+        // This will allow you to use a ptrace-based debugger like C++, Go, and Rust.
+        "--cap-add=SYS_PTRACE",
+        "--security-opt", "seccomp=unconfined"
+    ],
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+        "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
+        "source=/dev/input,target=/dev/input,type=bind,consistency=cached"
+    ],
+    "postCreateCommand": "sudo rosdep update && sudo apt update && sudo rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /workspace"
 }

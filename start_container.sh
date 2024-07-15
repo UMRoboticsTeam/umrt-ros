@@ -12,6 +12,7 @@ docker run \
 	--volume="/dev:/dev" \
 	--device-cgroup-rule="c 189:* rw" \
 	--device /dev/dri \
+	--device /dev/input \
 	--rm \
 	--network=host \
 	--pid=host \

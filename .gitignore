@@ -24,8 +24,8 @@ qtcreator-*
 # Emacs
 .#*
 
-# VS Code
-.vscode/
+# # VS Code
+# .vscode/
 
 # Colcon custom files
 COLCON_IGNORE
