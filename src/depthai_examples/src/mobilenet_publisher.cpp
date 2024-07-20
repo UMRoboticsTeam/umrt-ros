@@ -60,29 +60,43 @@ int main(int argc, char** argv) {
     }
     // Uses the path from param if passed or else uses from BLOB_PATH from CMAKE
 
-    dai::Pipeline pipeline = createPipeline();
-    dai::Device device(pipeline);
+    bool found_flag = false;
+    while(!found_flag) {
+        try {
+            dai::Pipeline pipeline = createPipeline();
+            dai::Device device(pipeline);
 
-    std::shared_ptr<dai::DataOutputQueue> monoQueue = device.getOutputQueue("mono", 30, false);
+            std::shared_ptr<dai::DataOutputQueue> monoQueue = device.getOutputQueue("mono", 30, false);
 
-    std::string mono_uri = cameraParamUri + "/" + "mono.yaml";
+            std::string mono_uri = cameraParamUri + "/" + "mono.yaml";
 
-    dai::rosBridge::ImageConverter monoConverter(tfPrefix + "_mono_camera_optical_frame", false);
-    dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> monoPublish(monoQueue,
-                                                                                        node,
-                                                                                        std::string("mono/image"),
-                                                                                        std::bind(&dai::rosBridge::ImageConverter::toRosMsg,
-                                                                                                  &monoConverter,  // since the converter has the same frame name
-                                                                                                                  // and image type is also same we can reuse it
-                                                                                                  std::placeholders::_1,
-                                                                                                  std::placeholders::_2),
-                                                                                        30,
-                                                                                        mono_uri,
-                                                                                        "mono");
+            dai::rosBridge::ImageConverter monoConverter(tfPrefix + "_mono_camera_optical_frame", false);
+            dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> monoPublish(monoQueue,
+                                                                                                node,
+                                                                                                std::string(
+                                                                                                        "mono/image"),
+                                                                                                std::bind(
+                                                                                                        &dai::rosBridge::ImageConverter::toRosMsg,
+                                                                                                        &monoConverter,  // since the converter has the same frame name
+                                                                                                        // and image type is also same we can reuse it
+                                                                                                        std::placeholders::_1,
+                                                                                                        std::placeholders::_2),
+                                                                                                30,
+                                                                                                mono_uri,
+                                                                                                "mono");
 
-    monoPublish.addPublisherCallback();  // addPublisherCallback works only when the dataqueue is non blocking.
+            monoPublish.addPublisherCallback();  // addPublisherCallback works only when the dataqueue is non blocking.
 
-    rclcpp::spin(node);
+            rclcpp::spin(node);
+
+            found_flag = true;
+        }
+        catch (std::runtime_error e) {
+            RCLCPP_WARN(node->get_logger(), "No device found, retrying search...");
+        }
+    }
+
+    rclcpp::shutdown();
 
     return 0;
 }
