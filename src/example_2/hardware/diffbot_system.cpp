@@ -29,6 +29,8 @@
 #define PWM_NEUTRAL 1.5
 #define PWM_AMPLITUDE 0.5
 
+#define PWM_FREQUENCY 50 // Hz, 20 ms period. -njreichert
+
 namespace ros2_control_demo_example_2
 {
 hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
@@ -208,7 +210,7 @@ hardware_interface::return_type DiffBotSystemHardware::read(
   return hardware_interface::return_type::OK;
 }
 
-void ros2_control_demo_example_2::DiffBotSystemHardware::set_pwm_wheel_speed(
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_pwm_wheel_speed(
   int channel, double angular_speed)
 {
   // Between -1 and 1 m/s by definition in diffbot_controllers.yaml.
@@ -224,28 +226,53 @@ void ros2_control_demo_example_2::DiffBotSystemHardware::set_pwm_wheel_speed(
     rclcpp::get_logger("DiffBotSystemHardware"),
     "Setting PWM channel %d to %f!", 
     channel, motor_pulse_width);
-  
-  this->pwm_device_.set_pwm_ms(channel, motor_pulse_width);
+
+  try
+  {
+    this->pwm_device_.set_pwm_freq(PWM_FREQUENCY);
+    this->pwm_device_.set_pwm_ms(channel, motor_pulse_width);
+  } 
+  catch (std::exception& e) // TODO: Make this look less hacky. -njreichert
+  {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("DiffBotSystemHardware"),
+      "Can't communicate with PWM Controller! (%s)",
+      e.what()
+    );
+
+    return hardware_interface::return_type::ERROR;
+  }
+
+  return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type ros2_control_demo_example_2 ::DiffBotSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
+  bool pwm_driver_unreachable = false;
 
   for (auto i = 0u; i < hw_commands_.size(); i++)
   {
-    RCLCPP_INFO(
-      rclcpp::get_logger("DiffBotSystemHardware"), "Command %.5f for '%s'!", hw_commands_[i],
-      info_.joints[i].name.c_str());
+    // RCLCPP_INFO(
+    //   rclcpp::get_logger("DiffBotSystemHardware"), "Command %.5f for '%s'!", hw_commands_[i],
+    //   info_.joints[i].name.c_str());
 
     hw_velocities_[i] = hw_commands_[i];
 
-    this->set_pwm_wheel_speed(i, hw_commands_[i]);
+    if (this->set_pwm_wheel_speed(i, hw_commands_[i]) != hardware_interface::return_type::OK)
+    {
+      pwm_driver_unreachable = true;
+    }
   }
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
 
-  return hardware_interface::return_type::OK;
+  if (pwm_driver_unreachable)
+  {
+    return hardware_interface::return_type::ERROR;
+  }
+  else
+  {
+    return hardware_interface::return_type::OK;
+  }
 }
 
 }  // namespace ros2_control_demo_example_2

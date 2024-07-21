@@ -73,7 +73,7 @@ public:
   hardware_interface::return_type write(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
-  void set_pwm_wheel_speed(int channel, double angular_speed);
+  hardware_interface::return_type set_pwm_wheel_speed(int channel, double angular_speed);
 
 private:
   // Parameters for the DiffBot simulation
