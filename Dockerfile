@@ -1,4 +1,4 @@
-FROM ros:humble as robot_image
+FROM ros:humble AS robot_image
 ARG USERNAME=USERNAME
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
@@ -64,7 +64,7 @@ RUN pip install -r /opt/app/requirements.txt
 
 WORKDIR /workspace
 
-ENV SHELL /bin/bash
+ENV SHELL=/bin/bash
 
 # USER $USERNAME
 CMD ["/bin/bash"]
@@ -101,7 +101,7 @@ RUN usermod -aG messagebus $USERNAME
 
 WORKDIR /workspace
 
-ENV SHELL /bin/bash
+ENV SHELL=/bin/bash
 
 USER $USERNAME
 CMD ["/bin/bash"]
