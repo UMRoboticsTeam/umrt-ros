@@ -228,7 +228,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
 
   // HACK ALERT!!!!!!!!!!!!!!!
   // This assumes the following:
-  // 1. Joints are passed in the following order: left wheel, left wheel, right wheel, right wheel
+  // 1. Joints are passed in the following order: LF, RF, LB, RB
   // 2. Servo outputs are wired in the EXACT SAME ORDER AS IN ASSUMPTION 1, STARTING AT PORT 0!
   //
   // Since a linear wheel speed that is positive results in wheels spinning in
@@ -236,7 +236,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   // wheels on the "other side".
   // 
   // Obviously this is horrible but is the best we have right now. -njreichert 2024-07-22
-  if (channel >= 2)
+  if (channel % 2 == 1)
   {
     linear_wheel_speed = -1 * linear_wheel_speed;
   }
