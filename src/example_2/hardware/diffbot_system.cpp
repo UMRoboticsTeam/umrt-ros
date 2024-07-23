@@ -236,7 +236,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   // wheels on the "other side".
   // 
   // Obviously this is horrible but is the best we have right now. -njreichert 2024-07-22
-  if (channel > 2)
+  if (channel >= 2)
   {
     linear_wheel_speed = -1 * linear_wheel_speed;
   }
