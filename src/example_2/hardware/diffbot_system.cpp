@@ -58,10 +58,6 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     wheel_radius_
   );
 
-  hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
     // DiffBotSystem has exactly two states and one command interface on each joint
@@ -109,6 +105,20 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
         joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
       return hardware_interface::CallbackReturn::ERROR;
     }
+
+    WheelInfo current_wheel = {
+      .name = joint.name,
+      .command = std::numeric_limits<double>::quiet_NaN(),
+      .velocity = std::numeric_limits<double>::quiet_NaN(),
+      .position = std::numeric_limits<double>::quiet_NaN(),
+    };
+
+    wheels.push_back(current_wheel);
+    RCLCPP_INFO(
+      rclcpp::get_logger("DiffBotSystemHardware"),
+      "Got new wheel with name: \"%s\"",
+      wheels.back().name.c_str()
+    );
   }
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -120,9 +130,9 @@ std::vector<hardware_interface::StateInterface> DiffBotSystemHardware::export_st
   for (auto i = 0u; i < info_.joints.size(); i++)
   {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
+      info_.joints[i].name, hardware_interface::HW_IF_POSITION, &wheels[i].position));
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
+      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &wheels[i].velocity));
   }
 
   return state_interfaces;
@@ -134,7 +144,7 @@ std::vector<hardware_interface::CommandInterface> DiffBotSystemHardware::export_
   for (auto i = 0u; i < info_.joints.size(); i++)
   {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_[i]));
+      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &wheels[i].command));
   }
 
   return command_interfaces;
@@ -155,13 +165,13 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_activate(
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   // set some default values
-  for (auto i = 0u; i < hw_positions_.size(); i++)
+  for (auto &wheel : this->wheels)
   {
-    if (std::isnan(hw_positions_[i]))
+    if (std::isnan(wheel.position))
     {
-      hw_positions_[i] = 0;
-      hw_velocities_[i] = 0;
-      hw_commands_[i] = 0;
+      wheel.position = 0;
+      wheel.velocity = 0;
+      wheel.command = 0;
     }
   }
 
@@ -193,17 +203,17 @@ hardware_interface::return_type DiffBotSystemHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  for (std::size_t i = 0; i < hw_velocities_.size(); i++)
+  for (std::size_t i = 0; i < wheels.size(); i++)
   {
     // Simulate DiffBot wheels's movement as a first-order system
     // Update the joint status: this is a revolute joint without any limit.
     // Simply integrates
-    hw_positions_[i] = hw_positions_[i] + period.seconds() * hw_velocities_[i];
+    wheels[i].position = wheels[i].position + period.seconds() * wheels[i].velocity;
 
     RCLCPP_INFO(
       rclcpp::get_logger("DiffBotSystemHardware"),
-      "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
-      hw_velocities_[i], info_.joints[i].name.c_str());
+      "Got position state %.5f and velocity state %.5f for '%s'!", wheels[i].position,
+      wheels[i].velocity, info_.joints[i].name.c_str());
   }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
@@ -251,15 +261,12 @@ hardware_interface::return_type ros2_control_demo_example_2 ::DiffBotSystemHardw
 {
   bool pwm_driver_unreachable = false;
 
-  for (auto i = 0u; i < hw_commands_.size(); i++)
+  for (auto i = 0u; i < wheels.size(); i++)
   {
-    // RCLCPP_INFO(
-    //   rclcpp::get_logger("DiffBotSystemHardware"), "Command %.5f for '%s'!", hw_commands_[i],
-    //   info_.joints[i].name.c_str());
 
-    hw_velocities_[i] = hw_commands_[i];
+    wheels[i].velocity = wheels[i].command;
 
-    if (this->set_pwm_wheel_speed(i, hw_commands_[i]) != hardware_interface::return_type::OK)
+    if (this->set_pwm_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK)
     {
       pwm_driver_unreachable = true;
     }

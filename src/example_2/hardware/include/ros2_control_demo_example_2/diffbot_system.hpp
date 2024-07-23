@@ -34,6 +34,8 @@
 
 #include "PiPCA9685/PCA9685.h"
 
+#include "ros2_control_demo_example_2/wheel_info.hpp"
+
 // This is a hacky workaround to get velocity commands working on the robot. we
 // are provided per-wheel angular velocitites, which we convert to a +/- 1 m/s
 // velocity internally, and then scale that to a pulse width between 1 and 2 ms.
@@ -87,9 +89,7 @@ private:
   double wheel_radius_;
 
   // Store the command for the simulated robot
-  std::vector<double> hw_commands_;
-  std::vector<double> hw_positions_;
-  std::vector<double> hw_velocities_;
+  std::vector<WheelInfo> wheels;
 
   PiPCA9685::PCA9685 pwm_device_;
 };
