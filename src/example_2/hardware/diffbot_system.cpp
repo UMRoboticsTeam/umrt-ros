@@ -226,6 +226,21 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   // Between -1 and 1 m/s by definition in diffbot_controllers.yaml.
   double linear_wheel_speed = std::clamp(angular_speed * this->wheel_radius_, -1.0, 1.0);
 
+  // HACK ALERT!!!!!!!!!!!!!!!
+  // This assumes the following:
+  // 1. Joints are passed in the following order: left wheel, left wheel, right wheel, right wheel
+  // 2. Servo outputs are wired in the EXACT SAME ORDER AS IN ASSUMPTION 1, STARTING AT PORT 0!
+  //
+  // Since a linear wheel speed that is positive results in wheels spinning in
+  // the same direction (i.e.: Reverse on the other side), we need to reverse 
+  // wheels on the "other side".
+  // 
+  // Obviously this is horrible but is the best we have right now. -njreichert 2024-07-22
+  if (channel > 2)
+  {
+    linear_wheel_speed = -1 * linear_wheel_speed;
+  }
+
   // Typical PWM Servo control assumes:
   // - 1.0 == Full reverse
   // - 1.5 == Neutral / stopped
