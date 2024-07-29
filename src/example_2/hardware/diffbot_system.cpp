@@ -194,9 +194,16 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_deactivate(
   }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
-  RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Successfully deactivated!");
-
-  return hardware_interface::CallbackReturn::SUCCESS;
+  if (try_to_reset_wheels() == hardware_interface::return_type::OK)
+  {
+    RCLCPP_INFO(rclcpp::get_logger("DiffBotSystemHardware"), "Successfully deactivated!");
+    return hardware_interface::CallbackReturn::SUCCESS;
+  }
+  else
+  {
+    RCLCPP_ERROR(rclcpp::get_logger("DiffBotSystemHardware"), "Couldn't deactivate!");
+    return hardware_interface::CallbackReturn::ERROR;
+  }
 }
 
 hardware_interface::return_type DiffBotSystemHardware::read(
@@ -271,6 +278,23 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   return hardware_interface::return_type::OK;
 }
 
+hardware_interface::return_type
+ros2_control_demo_example_2::DiffBotSystemHardware::try_to_reset_wheels()
+{
+  hardware_interface::return_type retval;
+
+  for (size_t channel_num = 0; channel_num < 4; channel_num++)
+  {
+    if (set_pwm_wheel_speed(channel_num, 0.0) != hardware_interface::return_type::OK)
+    {
+      retval = hardware_interface::return_type::ERROR;
+      break;
+    }
+  }
+
+  return retval;
+}
+
 hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
@@ -305,29 +329,14 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
 hardware_interface::CallbackReturn ros2_control_demo_example_2::DiffBotSystemHardware::on_error(
   [[maybe_unused]] const rclcpp_lifecycle::State &previous_state)
 {
-  hardware_interface::CallbackReturn retval = hardware_interface::CallbackReturn::SUCCESS;
-
-  try
+  if (try_to_reset_wheels() == hardware_interface::return_type::OK)
   {
-    // TODO: Can we re-open the i2c device, or is it not worth it? -njreichert
-    this->pwm_device_.set_pwm_freq(PWM_FREQUENCY);
-    for (size_t channel_num = 0; channel_num < 4; channel_num++)
-    {
-      this->pwm_device_.set_pwm_ms(channel_num, PWM_NEUTRAL);
-    }
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
-  catch (std::exception& e) // TODO: Make this look less hacky. -njreichert
+  else
   {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("DiffBotSystemHardware"),
-      "Can't communicate with PWM Controller! (%s)",
-      e.what()
-    );
-
-    retval = hardware_interface::CallbackReturn::ERROR;
+    return hardware_interface::CallbackReturn::ERROR;
   }
-
-  return retval;
 }
 
 }  // namespace ros2_control_demo_example_2

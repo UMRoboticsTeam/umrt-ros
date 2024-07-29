@@ -79,9 +79,12 @@ public:
   hardware_interface::CallbackReturn on_error(
     const rclcpp_lifecycle::State &previous_state) override;
 
-  hardware_interface::return_type set_pwm_wheel_speed(int channel, double angular_speed);
-
 private:
+  hardware_interface::return_type set_pwm_wheel_speed(
+    int channel, double angular_speed);
+
+  hardware_interface::return_type try_to_reset_wheels();
+
   // Parameters for the DiffBot simulation
   double hw_start_sec_;
   double hw_stop_sec_;
