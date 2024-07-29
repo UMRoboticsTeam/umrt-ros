@@ -271,7 +271,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type ros2_control_demo_example_2 ::DiffBotSystemHardware::write(
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   bool pwm_driver_unreachable = false;
@@ -295,6 +295,39 @@ hardware_interface::return_type ros2_control_demo_example_2 ::DiffBotSystemHardw
   {
     return hardware_interface::return_type::OK;
   }
+}
+
+//
+// Attempt to reset the PWM Driver.
+// 
+// If we cannot reset it, we have no option but to kill the program. -njreichert
+//
+hardware_interface::CallbackReturn ros2_control_demo_example_2::DiffBotSystemHardware::on_error(
+  [[maybe_unused]] const rclcpp_lifecycle::State &previous_state)
+{
+  hardware_interface::CallbackReturn retval = hardware_interface::CallbackReturn::SUCCESS;
+
+  try
+  {
+    // TODO: Can we re-open the i2c device, or is it not worth it? -njreichert
+    this->pwm_device_.set_pwm_freq(PWM_FREQUENCY);
+    for (size_t channel_num = 0; channel_num < 4; channel_num++)
+    {
+      this->pwm_device_.set_pwm_ms(channel_num, PWM_NEUTRAL);
+    }
+  }
+  catch (std::exception& e) // TODO: Make this look less hacky. -njreichert
+  {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("DiffBotSystemHardware"),
+      "Can't communicate with PWM Controller! (%s)",
+      e.what()
+    );
+
+    retval = hardware_interface::CallbackReturn::ERROR;
+  }
+
+  return retval;
 }
 
 }  // namespace ros2_control_demo_example_2

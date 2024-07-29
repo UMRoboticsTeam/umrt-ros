@@ -75,6 +75,10 @@ public:
   hardware_interface::return_type write(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
+  ROS2_CONTROL_DEMO_EXAMPLE_2_PUBLIC
+  hardware_interface::CallbackReturn on_error(
+    const rclcpp_lifecycle::State &previous_state) override;
+
   hardware_interface::return_type set_pwm_wheel_speed(int channel, double angular_speed);
 
 private:
