@@ -9,7 +9,11 @@ COPY requirements.txt /opt/app/requirements.txt
 # Environment Variables
 ENV WS=/workspace
 
-RUN apt update
+# See https://stackoverflow.com/a/76260513. on QEMU aarch64 builds some install script
+# ran by libc-bin segfaults. -njreichert
+RUN rm /var/lib/dpkg/info/libc-bin.*
+RUN apt-get clean
+RUN apt-get update
 
 # Dependencies
 # Whenever adding deps add a comment before to note what they are for. -njreichert
@@ -69,7 +73,7 @@ ENV SHELL=/bin/bash
 # USER $USERNAME
 CMD ["/bin/bash"]
 
-FROM robot_image
+FROM robot_image AS dev_image
 
 RUN apt update
 RUN apt install -y \
@@ -99,9 +103,30 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 RUN usermod -aG messagebus $USERNAME 
 
-WORKDIR /workspace
-
 ENV SHELL=/bin/bash
 
 USER $USERNAME
 CMD ["/bin/bash"]
+
+FROM robot_image AS build_artifact
+
+ADD https://github.com/UMRoboticsTeam/umrt-ros.git /workspace
+
+WORKDIR /workspace
+ENV SHELL=/bin/bash
+SHELL ["/bin/bash", "-c"]
+
+# Enable faster builds with build.sh. -njreichert
+ENV COLCON_BUILD_EXECUTOR=parallel 
+
+# TODO: Required? -njreichert
+RUN source /opt/ros/humble/setup.bash
+
+RUN rosdep update
+RUN apt update
+
+RUN rosdep install --from-paths /workspace/src --ignore-src --rosdistro=humble -y
+RUN source /opt/ros/humble/setup.bash && ./build.sh
+
+CMD ["/bin/bash"]
+
