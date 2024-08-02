@@ -110,7 +110,7 @@ CMD ["/bin/bash"]
 
 FROM robot_image AS build_artifact
 
-ADD https://github.com/UMRoboticsTeam/umrt-ros.git /workspace
+ADD . /workspace
 
 WORKDIR /workspace
 ENV SHELL=/bin/bash
@@ -126,7 +126,12 @@ RUN rosdep update
 RUN apt update
 
 RUN rosdep install --from-paths /workspace/src --ignore-src --rosdistro=humble -y
-RUN source /opt/ros/humble/setup.bash && ./build.sh
+
+RUN rm -rf /workspace
+
+# TODO: Look into what exactly is failing on builds of depthai-examples
+# only on Dockerfiles. -njreichert
+# RUN source /opt/ros/humble/setup.bash && ./build.sh
 
 CMD ["/bin/bash"]
 
