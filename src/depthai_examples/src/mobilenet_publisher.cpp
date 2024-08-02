@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 
+
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
@@ -16,6 +17,7 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
 #include "depthai/pipeline/node/MonoCamera.hpp"
+#include <depthai/pipeline/node/VideoEncoder.hpp>
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 
@@ -25,15 +27,18 @@ dai::Pipeline createPipeline() {
     auto monoCam = pipeline.create<dai::node::MonoCamera>();
     auto xlinkOut = pipeline.create<dai::node::XLinkOut>();
 
-    xlinkOut->setStreamName("mono");
+    xlinkOut->setStreamName("jpeg");
 
     monoCam->setResolution(dai::MonoCameraProperties::SensorResolution::THE_400_P);
     monoCam->setFps(1);
-    monoCam->setImageOrientation(dai::CameraImageOrientation::NORMAL);
-    monoCam->setIsp3aFps(0); //default is 0 anyway but added for redundancy
     monoCam->setRawOutputPacked(true);
 
-    monoCam->out.link(xlinkOut->input);
+    auto videoEnc = pipeline.create<dai::node::VideoEncoder>();
+    videoEnc->setDefaultProfilePreset(monoCam->getFps(), dai::VideoEncoderProperties::Profile::MJPEG);
+    videoEnc->setQuality(25);
+
+    monoCam->out.link(videoEnc->input);
+    videoEnc->bitstream.link(xlinkOut->input);
 
     return pipeline;
 }
