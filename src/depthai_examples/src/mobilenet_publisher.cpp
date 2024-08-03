@@ -20,25 +20,40 @@
 #include <depthai/pipeline/node/VideoEncoder.hpp>
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai/pipeline/node/UVC.hpp"
 
 dai::Pipeline createPipeline() {
     dai::Pipeline pipeline;
 
-    auto monoCam = pipeline.create<dai::node::MonoCamera>();
-    auto xlinkOut = pipeline.create<dai::node::XLinkOut>();
+    // THIS IS NOT FUNCTIONAL! -njreichert
 
-    xlinkOut->setStreamName("jpeg");
+    // auto monoCam = pipeline.create<dai::node::MonoCamera>();
+    auto colourCam = pipeline.create<dai::node::ColorCamera>();
+    // auto xlinkOut = pipeline.create<dai::node::XLinkOut>();
+    auto uvc = pipeline.create<dai::node::UVC>();
 
-    monoCam->setResolution(dai::MonoCameraProperties::SensorResolution::THE_400_P);
-    monoCam->setFps(1);
-    monoCam->setRawOutputPacked(true);
+    // xlinkOut->setStreamName("mono");
 
-    auto videoEnc = pipeline.create<dai::node::VideoEncoder>();
-    videoEnc->setDefaultProfilePreset(monoCam->getFps(), dai::VideoEncoderProperties::Profile::MJPEG);
-    videoEnc->setQuality(25);
+    // monoCam->setResolution(dai::MonoCameraProperties::SensorResolution::THE_400_P);
+    // monoCam->setFps(30);
+    // monoCam->setRawOutputPacked(true);
+    
+    colourCam->setVideoSize(640, 480);
+    colourCam->setBoardSocket(dai::CameraBoardSocket::CAM_A);
+    colourCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_800_P);
+    colourCam->setInterleaved(false);
+    colourCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::RGB);
+    colourCam->setFps(1);
 
-    monoCam->out.link(videoEnc->input);
-    videoEnc->bitstream.link(xlinkOut->input);
+    // auto videoEnc = pipeline.create<dai::node::VideoEncoder>();
+    // videoEnc->setDefaultProfilePreset(colourCam->getFps(), dai::VideoEncoderProperties::Profile::MJPEG);
+    // videoEnc->setQuality(25);
+
+    colourCam->video.link(uvc->input);
+
+    // colourCam->video.link(xlinkOut->input);
+    // monoCam->out.link(xlinkOut->input);
+    // videoEnc->bitstream.link(uvc->input);
 
     return pipeline;
 }
@@ -71,23 +86,23 @@ int main(int argc, char** argv) {
             dai::Pipeline pipeline = createPipeline();
             dai::Device device(pipeline);
 
-            std::shared_ptr<dai::DataOutputQueue> monoQueue = device.getOutputQueue("mono", 30, false);
+            std::shared_ptr<dai::DataOutputQueue> previewQueue = device.getOutputQueue("mono", 30, false);
 
-            std::string mono_uri = cameraParamUri + "/" + "mono.yaml";
+            std::string colour_uri = cameraParamUri + "/" + "color.yaml";
 
-            dai::rosBridge::ImageConverter monoConverter(tfPrefix + "_mono_camera_optical_frame", false);
-            dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> monoPublish(monoQueue,
+            dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
+            dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> monoPublish(previewQueue,
                                                                                                 node,
                                                                                                 std::string(
                                                                                                         "mono/image"),
                                                                                                 std::bind(
                                                                                                         &dai::rosBridge::ImageConverter::toRosMsg,
-                                                                                                        &monoConverter,  // since the converter has the same frame name
+                                                                                                        &rgbConverter,  // since the converter has the same frame name
                                                                                                         // and image type is also same we can reuse it
                                                                                                         std::placeholders::_1,
                                                                                                         std::placeholders::_2),
                                                                                                 30,
-                                                                                                mono_uri,
+                                                                                                colour_uri,
                                                                                                 "mono");
 
             monoPublish.addPublisherCallback();  // addPublisherCallback works only when the dataqueue is non blocking.

@@ -76,7 +76,7 @@ def generate_launch_description():
     launch_entities = [
         use_mock_hardware_arg,
         robot_description_launch,
-        drivetrain_launch,
+        # drivetrain_launch,
         camera_launch,
     ]
 
