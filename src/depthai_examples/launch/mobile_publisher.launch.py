@@ -7,18 +7,15 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 import launch_ros.actions
 import launch_ros.descriptions
-from launch_ros.parameter_descriptions import ParameterValue 
+from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
     depthai_examples_path = get_package_share_directory('depthai_examples')
-    default_rviz = os.path.join(depthai_examples_path,
-                                'rviz', 'pointCloud.rviz')
-    default_resources_path = os.path.join(depthai_examples_path,
-                                'resources')
-                                
+    default_rviz = os.path.join(depthai_examples_path, 'rviz', 'pointCloud.rviz')
+    default_resources_path = os.path.join(depthai_examples_path, 'resources')
+
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
-    
-    # Deprecated. Hardcoding these values as they are tied to the physical design of the robot. -njreichert
+
     camera_model     = LaunchConfiguration('camera_model',  default = 'OAK-D')
     tf_prefix        = LaunchConfiguration('tf_prefix',   default = 'oak')
     base_frame       = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
@@ -35,13 +32,12 @@ def generate_launch_description():
     nnName            = LaunchConfiguration('nnName', default = "x")
     resourceBaseFolder = LaunchConfiguration('resourceBaseFolder', default = default_resources_path)
 
-
     declare_camera_model_cmd = DeclareLaunchArgument(
         'camera_model',
         default_value=camera_model,
         description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.')
 
-    declare_tf_prefix_cmd= DeclareLaunchArgument(
+    declare_tf_prefix_cmd = DeclareLaunchArgument(
         'tf_prefix',
         default_value=tf_prefix,
         description='The name of the camera. It can be different from the camera model and it will be used in naming TF.')
@@ -100,56 +96,44 @@ def generate_launch_description():
         'nnName',
         default_value=nnName,
         description='Path to the object detection blob needed for detection')
-    
+
     declare_resourceBaseFolder_cmd = DeclareLaunchArgument(
         'resourceBaseFolder',
         default_value=resourceBaseFolder,
         description='Path to the resources folder which contains the default blobs for the network')
 
-    # urdf_launch = IncludeLaunchDescription(
-    #     launch_description_sources.PythonLaunchDescriptionSource(os.path.join(urdf_launch_dir, 'urdf_launch.py')),
-    #         launch_arguments={
-    #             'tf_prefix'   : 'oak',
-    #         }.items(),
-    #     )
-
     mobilenet_node = launch_ros.actions.Node(
-            package='depthai_examples', executable='mobilenet_node',
-            output='screen',
-            parameters=[{'tf_prefix': 'oak'},
-                        {'camera_param_uri': camera_param_uri},
-                        {'sync_nn': sync_nn},
-                        {'nnName': nnName},
-                        {'resourceBaseFolder': resourceBaseFolder}])
-
+        package='depthai_examples', executable='mobilenet_node',
+        output='screen',
+        parameters=[{'tf_prefix': 'oak'},
+                    {'camera_param_uri': camera_param_uri},
+                    {'sync_nn': sync_nn},
+                    {'nnName': nnName},
+                    {'resourceBaseFolder': resourceBaseFolder}])
     rviz_node = launch_ros.actions.Node(
-            package='rviz2', executable='rviz2', output='screen',
-            arguments=['--display-config', default_rviz])
+        package='rviz2', executable='rviz2', output='screen',
+        arguments=['--display-config', default_rviz])
 
     ld = LaunchDescription()
     ld.add_action(declare_tf_prefix_cmd)
     ld.add_action(declare_camera_model_cmd)
-    
     ld.add_action(declare_base_frame_cmd)
     ld.add_action(declare_parent_frame_cmd)
-    
     ld.add_action(declare_pos_x_cmd)
     ld.add_action(declare_pos_y_cmd)
     ld.add_action(declare_pos_z_cmd)
     ld.add_action(declare_roll_cmd)
     ld.add_action(declare_pitch_cmd)
     ld.add_action(declare_yaw_cmd)
-
     ld.add_action(declare_camera_param_uri_cmd)
     ld.add_action(declare_sync_nn_cmd)
     ld.add_action(declare_nnName_cmd)
     ld.add_action(declare_resourceBaseFolder_cmd)
-    
     ld.add_action(mobilenet_node)
-    # ld.add_action(urdf_launch)
 
+    # ld.add_action(urdf_launch)
     # ld.add_action(metric_converter_node)
     # ld.add_action(point_cloud_node)
     # ld.add_action(rviz_node)
-    return ld
 
+    return ld
