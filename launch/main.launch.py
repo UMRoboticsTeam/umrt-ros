@@ -54,6 +54,16 @@ def generate_launch_description():
         }.items(),
     )
 
+    joy_launch_path = os.path.join(
+        get_package_share_directory('ros2_control_demo_example_2'),
+        'launch',
+        'joy.launch.py',
+    )
+
+    joy_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(joy_launch_path)
+    )
+
     camera_launch_directory = os.path.join(get_package_share_directory('depthai_examples'),
                                            'launch/mobile_publisher.launch.py')
     camera_launch = IncludeLaunchDescription(
@@ -81,12 +91,19 @@ def generate_launch_description():
     ########################
     # LAUNCH
     ########################
-    launch_entities = [
+    robot_launch = [
         use_mock_hardware_arg,
         robot_description_launch,
         drivetrain_launch,
         camera_launch,
-        # video_decoder_node,  // To be launched on base station ONLY
     ]
+
+    base_launch = [
+        joy_launch,
+        video_decoder_node
+    ]
+
+    # Change upon either base or robot launch
+    launch_entities = base_launch
 
     return LaunchDescription(launch_entities)
