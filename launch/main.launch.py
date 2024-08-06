@@ -96,6 +96,7 @@ def generate_launch_description():
         robot_description_launch,
         drivetrain_launch,
         camera_launch,
+        gps_launch
     ]
 
     base_launch = [
