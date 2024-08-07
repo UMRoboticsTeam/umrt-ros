@@ -48,7 +48,6 @@ def generate_launch_description():
         video_decoder_node
     ]
 
-    # Change upon either base or robot launch
     launch_entities = base_launch
 
     return LaunchDescription(launch_entities)

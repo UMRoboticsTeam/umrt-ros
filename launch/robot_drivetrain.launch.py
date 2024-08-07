@@ -67,7 +67,6 @@ def generate_launch_description():
         drivetrain_launch,
     ]
 
-    # Change upon either base or robot launch
     launch_entities = robot_launch
 
     return LaunchDescription(launch_entities)
