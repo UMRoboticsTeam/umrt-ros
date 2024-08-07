@@ -22,7 +22,7 @@ def generate_launch_description():
 
     use_mock_hardware_arg = DeclareLaunchArgument(
         'use_mock_hardware',
-        default_value='False',
+        default_value='True',
     )
 
     ########################
@@ -79,24 +79,24 @@ def generate_launch_description():
         parameters=[{'encoded_video_topic': '/encoded_video'}])
 
     gps_launch = Node(
-            package='gpsx',
-            executable='gps_node',
-            output='screen',
-            parameters=[
-                {'comm_port': '/dev/ttyUSB0'},
-                {'comm_speed': 4800}
-            ]
+        package='gpsx',
+        executable='gps_node',
+        output='screen',
+        parameters=[
+            {'comm_port': '/dev/ttyUSB0'},
+            {'comm_speed': 4800}
+        ]
     )
 
     ########################
     # LAUNCH
     ########################
     robot_launch = [
-        use_mock_hardware_arg,
-        robot_description_launch,
-        drivetrain_launch,
-        camera_launch,
-        gps_launch
+        #use_mock_hardware_arg,
+        #robot_description_launch,
+        #drivetrain_launch,
+        #camera_launch,
+        #gps_launch
     ]
 
     base_launch = [
