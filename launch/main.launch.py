@@ -22,7 +22,7 @@ def generate_launch_description():
 
     use_mock_hardware_arg = DeclareLaunchArgument(
         'use_mock_hardware',
-        default_value='False',
+        default_value='True',
     )
 
     ########################
@@ -54,9 +54,39 @@ def generate_launch_description():
         }.items(),
     )
 
+    joy_launch_path = os.path.join(
+        get_package_share_directory('ros2_control_demo_example_2'),
+        'launch',
+        'joy.launch.py',
+    )
+
+    joy_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(joy_launch_path)
+    )
+
+    camera_launch_directory = os.path.join(get_package_share_directory('depthai_examples'),
+                                           'launch/mobile_publisher.launch.py')
+    camera_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(camera_launch_directory)
+    )
+
     ########################
     # NODE DEFINITIONS
     ########################
+    video_decoder_node = launch_ros.actions.Node(
+        package='depthai_examples', executable='video_decoder_node',
+        output='screen',
+        parameters=[{'encoded_video_topic': '/encoded_video'}])
+
+    gps_launch = Node(
+        package='gpsx',
+        executable='gps_node',
+        output='screen',
+        parameters=[
+            {'comm_port': '/dev/ttyUSB0'},
+            {'comm_speed': 4800}
+        ]
+    )
 
     ########################
     # LAUNCH
@@ -65,6 +95,13 @@ def generate_launch_description():
         use_mock_hardware_arg,
         robot_description_launch,
         drivetrain_launch,
+        camera_launch,
+        gps_launch
+    ]
+
+    base_launch = [
+        joy_launch,
+        video_decoder_node
     ]
 
     # Change upon either base or robot launch
