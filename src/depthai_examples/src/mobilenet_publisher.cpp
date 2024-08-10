@@ -45,7 +45,11 @@ dai::Pipeline createPipeline() {
 class MobileNetPublisherNode : public rclcpp::Node {
 public:
     MobileNetPublisherNode() : Node("mobilenet_publisher_node") {
-        encoded_pub_ = this->create_publisher<sensor_msgs::msg::CompressedImage>("encoded_video", 10);
+        encoded_pub_ = this->create_publisher<sensor_msgs::msg::CompressedImage>(
+                "encoded_video",
+                rclcpp::QoS(rclcpp::KeepLast(1))
+                        .best_effort()
+                        .durability_volatile());
 
         pipeline = createPipeline();
         device = std::make_shared<dai::Device>(pipeline);
