@@ -6,8 +6,9 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 import launch_ros.actions
 import launch_ros.descriptions
@@ -88,6 +89,18 @@ def generate_launch_description():
         ]
     )
 
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("ros2_control_demo_description"), "diffbot/rviz", "diffbot.rviz"]
+    )
+
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+    )
+
     ########################
     # LAUNCH
     ########################
@@ -96,15 +109,16 @@ def generate_launch_description():
         robot_description_launch,
         drivetrain_launch,
         camera_launch,
-        gps_launch
+        gps_launch,
     ]
 
     base_launch = [
         joy_launch,
-        video_decoder_node
+        video_decoder_node,
+        rviz_node
     ]
 
     # Change upon either base or robot launch
-    launch_entities = robot_launch
+    launch_entities = base_launch
 
     return LaunchDescription(launch_entities)
