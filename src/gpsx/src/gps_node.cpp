@@ -166,7 +166,7 @@ class GPSPublisher : public rclcpp::Node
     double safe_stod(std::string& convert);
     double convert_longlat(std::string& convert);
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<gpsx::msg::Gpsx>::SharedPtr publisher_;
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr publisher_;
     rclcpp::Service<gpsx::srv::GetSatList>::SharedPtr service_;
     int openConnection(void);
     int closeConnection(void);
@@ -188,7 +188,7 @@ class GPSPublisher : public rclcpp::Node
  
 void GPSPublisher::run(void)
 {
-  publisher_ = this->create_publisher<gpsx::msg::Gpsx>("gpsx", 10);
+  publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gpsx", 10);
   service_ = this->create_service<gpsx::srv::GetSatList>("get_sat_list",&listGps);
   timer_ = this->create_wall_timer(50ms, std::bind(&GPSPublisher::timer_callback, this));
 }
@@ -372,6 +372,7 @@ int GPSPublisher::readMessage(void)
     // is this one of the implemented messages?
     if(msgRead.compare(3,3,std::string("GGA"))==0)
     {
+      newdata_ = true;
       //std::cout << "Got new GGA data" << std::endl;
       // this is the GGA message
       for(unsigned int i=1;i<tokens.size();i++)
@@ -669,7 +670,9 @@ int GPSPublisher::readMessage(void)
 
 void GPSPublisher::timer_callback()
 {
-  auto message = gpsx::msg::Gpsx();
+  // auto message = gpsx::msg::Gpsx();
+  auto message = sensor_msgs::msg::NavSatFix();
+  auto status_msg = sensor_msgs::msg::NavSatStatus();
   if(!initialized_)
   {
     if (init_counter_ >= 60)
@@ -692,22 +695,38 @@ void GPSPublisher::timer_callback()
 
   if(newdata_)
   {
+    status_msg.service = status_msg.SERVICE_GPS;
+
+    if (gga_.fix) 
+    {
+      status_msg.status = status_msg.STATUS_FIX;
+    }
+    else
+    {
+      status_msg.status = status_msg.STATUS_NO_FIX;
+    }
+
+    message.status = status_msg;
     message.longitude=gga_.longitude;
     message.latitude=gga_.latitude;
     message.altitude=gga_.altitude;
-    message.satellites=gga_.satellites;
-    message.mode_indicator=gga_.fix;
-    message.separation=gga_.separation;
-    message.dilution=gga_.dilution;
-    if(gga_.UTCtime.length()>0)
-    {
-      //std::cout << "Converting UTC: "<< UTCtime << std::endl;
-      message.utc_time=std::strtod(gga_.UTCtime.c_str(),0);
-    }
-    message.true_course_magnetic=vtg_.true_course_magnetic;
-    message.true_course=vtg_.true_course;
-    message.ground_speed=vtg_.ground_speed;
+    message.position_covariance_type = sensor_msgs::msg::NavSatFix::COVARIANCE_TYPE_UNKNOWN;
+
+    // message.satellites=gga_.satellites;jjj
+    // message.mode_indicator=gga_.fix;
+    // message.separation=gga_.separation;
+    // message.dilution=gga_.dilution;
+    // if(gga_.UTCtime.length()>0)
+    // {
+    //   //std::cout << "Converting UTC: "<< UTCtime << std::endl;
+    //   message.utc_time=std::strtod(gga_.UTCtime.c_str(),0);
+    //   message.
+    // }
+    // message.true_course_magnetic=0;
+    // message.true_course=0;
+    // message.ground_speed=0;
     //RCLCPP_INFO(this->get_logger(), "Publishing: long: '%f' lat: '%f' alt: '%f'", message.longitude, message.latitude, message.altitude);
+
     publisher_->publish(message);
     newdata_=false;
   }

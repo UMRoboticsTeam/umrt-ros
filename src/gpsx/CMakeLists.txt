@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(gpsx)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
