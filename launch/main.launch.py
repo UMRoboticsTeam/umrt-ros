@@ -114,8 +114,8 @@ def generate_launch_description():
 
     base_launch = [
         joy_launch,
+        rviz_node,
         video_decoder_node,
-        rviz_node
     ]
 
     # Change upon either base or robot launch

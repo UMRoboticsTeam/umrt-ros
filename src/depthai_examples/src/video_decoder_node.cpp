@@ -11,7 +11,10 @@ public:
         std::string encoded_video_topic = this->get_parameter("encoded_video_topic").as_string();
 
         encoded_sub_ = this->create_subscription<sensor_msgs::msg::CompressedImage>(
-                encoded_video_topic, 10,
+                encoded_video_topic, 
+                rclcpp::QoS(rclcpp::KeepLast(1))
+                        .best_effort()
+                        .durability_volatile(),
                 std::bind(&VideoDecoderNode::decodeCallback, this, std::placeholders::_1));
 
         image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("decoded_image", 10);
