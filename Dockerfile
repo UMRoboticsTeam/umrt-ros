@@ -63,6 +63,15 @@ RUN apt install -y \
 # RUN apt install -y --no-install-recommends \
 #     && rm -rf /var/lib/apt/lists/*
 
+# Setup Python dependencies
+RUN apt-get update && apt-get install -y \
+    ninja-build \
+    pkg-config \
+    libglib2.0-dev \
+    libcairo2-dev \
+    libgirepository1.0-dev
+RUN pip install meson
+
 # Setup
 RUN pip install -r /opt/app/requirements.txt
 
