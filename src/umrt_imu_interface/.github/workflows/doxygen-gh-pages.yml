@@ -1,0 +1,15 @@
+name: Deploy Doxygen to Github Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  doxygen:
+    uses: UMRoboticsTeam/umrt-ci-cd/.github/workflows/doxygen-gh-pages.yaml@main
+
+    permissions:
+      pages: write
+      id-token: write
+      packages: read
