@@ -12,25 +12,26 @@
 using std::int16_t;
 using std::uint32_t;
 using std::uint8_t;
+using std::runtime_error; 
 
 Imu_Interface::Imu_Interface(const std::string& file_addr, uint8_t slave_addr) { 
     fd = open(file_addr.c_str(), O_RDWR); 
     if (fd < 0) {
         BOOST_LOG_TRIVIAL(error) << "[x] i2c file not found, using " << file_addr; 
-        throw std::runtime_error("[x] could not find i2c file"); 
+        throw runtime_error("[x] could not find i2c file"); 
     }
 
     // Set slave address
     if (ioctl(fd, I2C_SLAVE, slave_addr) < 0) {
         BOOST_LOG_TRIVIAL(error) << "[x] Could not set I2C slave address"; 
-        throw std::runtime_error("[x] could not set I2C slave address"); 
+        throw runtime_error("[x] could not set I2C slave address"); 
     }
 
     // Verify chip ID
     int32_t chip_id = i2c_smbus_read_byte_data(fd, CHIP_ID_REG);
     if (chip_id != CHIP_ID_VAL) {
         BOOST_LOG_TRIVIAL(error) << "[x] Invalid chip ID: " << (int)chip_id << ", expected "<<CHIP_ID_VAL;
-        throw std::runtime_error("[x] Invalid chip ID for imu sensor"); 
+        throw runtime_error("[x] Invalid chip ID for imu sensor"); 
     }
 
     // Perform power-on reset
@@ -73,7 +74,7 @@ bool Imu_Interface::check_calibration() {
 int16_t Imu_Interface::read_16_bit_reg(const uint8_t& reg_l, const int& fd) {
     if(fd == -1){
          BOOST_LOG_TRIVIAL(error) << "[x] i2c file not found, using fd:"<<fd; 
-         throw std::runtime_error("[x] i2c file not found, using fd:"); 
+         throw runtime_error("[x] i2c file not found, using fd:"); 
     }
     int retries = 3;
     uint8_t val[2]; 

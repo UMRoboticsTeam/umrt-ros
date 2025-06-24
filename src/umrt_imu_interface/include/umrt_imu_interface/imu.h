@@ -15,12 +15,12 @@ extern "C" {
     #include <i2c/smbus.h>
 }
 #include <unistd.h>
-#include <thread> 
 #include <chrono>
 #include <sys/ioctl.h> 
 #include <fcntl.h>
+#include <thread>
+#include <stdexcept> 
 #include "register_map.h"
-#include <cerrno>
 #include <boost/log/trivial.hpp>
 
 
