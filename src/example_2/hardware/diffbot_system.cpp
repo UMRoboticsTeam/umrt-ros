@@ -43,6 +43,10 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
+  const std::string can_interface = "can0";
+  this->can_sender = std::make_unique<drivers::socketcan::SocketCanSender>(can_interface);
+
+
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   hw_start_sec_ =
     hardware_interface::stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
@@ -227,6 +231,23 @@ hardware_interface::return_type DiffBotSystemHardware::read(
   return hardware_interface::return_type::OK;
 }
 
+
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_can_wheel_speed(int channel, double angular_speed) {
+
+  std::vector<uint8_t> payload(5);
+
+  float angular_speedf = (float)angular_speed;
+
+  payload[0] = channel; 
+  std::memcpy(&payload[1], &angular_speedf, sizeof(float));
+
+  drivers::socketcan::CanId can_id(0x126, 0, drivers::socketcan::FrameType::DATA, drivers::socketcan::StandardFrame);
+  this->can_sender->send(payload.data(), payload.size(), can_id);
+  
+  //this->can_sender->send(payload.data(),  drivers::socketcan::CanId(0x126, 0,  drivers::socketcan::FrameType::DATA,  drivers::socketcan::StandardFrame_{}), 100);
+}
+
+/*
 hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_pwm_wheel_speed(
   int channel, double angular_speed)
 {
@@ -277,22 +298,26 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
 
   return hardware_interface::return_type::OK;
 }
+*/
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::try_to_reset_wheels() {
 
-hardware_interface::return_type
-ros2_control_demo_example_2::DiffBotSystemHardware::try_to_reset_wheels()
-{
-  hardware_interface::return_type retval;
+  bool pwm_driver_unreachable = false;
 
-  for (size_t channel_num = 0; channel_num < 4; channel_num++)
-  {
-    if (set_pwm_wheel_speed(channel_num, 0.0) != hardware_interface::return_type::OK)
-    {
-      retval = hardware_interface::return_type::ERROR;
-      break;
+  for (std::size_t i = 0; i < wheels.size(); i++) {
+    wheels[i].velocity = 0;
+
+    if (this->set_can_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK) {
+      pwm_driver_unreachable = true;
     }
   }
 
-  return retval;
+  if (pwm_driver_unreachable) {
+    return hardware_interface::return_type::ERROR;
+  }
+  else {
+    return hardware_interface::return_type::OK;
+  }
+  
 }
 
 hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::write(
@@ -305,18 +330,15 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
 
     wheels[i].velocity = wheels[i].command;
 
-    if (this->set_pwm_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK)
-    {
+    if (this->set_can_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK) {
       pwm_driver_unreachable = true;
     }
   }
 
-  if (pwm_driver_unreachable)
-  {
+  if (pwm_driver_unreachable) {
     return hardware_interface::return_type::ERROR;
   }
-  else
-  {
+  else {
     return hardware_interface::return_type::OK;
   }
 }
@@ -337,6 +359,7 @@ hardware_interface::CallbackReturn ros2_control_demo_example_2::DiffBotSystemHar
   {
     return hardware_interface::CallbackReturn::ERROR;
   }
+  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 }  // namespace ros2_control_demo_example_2

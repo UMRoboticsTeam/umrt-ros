@@ -12,10 +12,11 @@ docker run \
 	--volume="/tmp/.X11-unix/:/tmp/.X11-unix" \
 	--volume="/dev:/dev" \
 	--device-cgroup-rule="c 189:* rw" \
-	--device /dev/dri \
+	--platform linux/amd64 \
 	--device /dev/input \
-	--rm \
 	--network=host \
+	--cap-add=NET_ADMIN \
+	--rm \
 	--pid=host \
 	--name $2 \
 	$1
