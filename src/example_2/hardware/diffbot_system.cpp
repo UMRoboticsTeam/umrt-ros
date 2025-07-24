@@ -231,26 +231,44 @@ hardware_interface::return_type DiffBotSystemHardware::read(
   return hardware_interface::return_type::OK;
 }
 
+  /* set_can_wheel_speed
+   * NOTES:
+   * 1) This function is called per motor, but we can access wheels array and follow their .command value. For sending one CAN frame for all wheel speeds, we ignore v_linear_mps for one motor nd use wheel indexing as wheels[i]
+   *
+   * 2) Current setup is that we SCALE up to keep precision under the same CAN frame for int16_t. The STM side will downscale by dividing by SCALE and handle the precise value for more exact motor control.
+   *
+   * 3) Constants are in SI units always
+   */
 
 hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_can_wheel_speed(int channel, double v_linear_mps) {
 
-  //Compute RPM & Log
-  const double omega_rad_s = v_linear_mps / wheel_radius_;
-  double omega_rpm = static_cast<float>(omega_rad_s * 60.0 / (2.0 * M_PI));
+  //float wheel_radius = 0.1;
+  //SHUT UP COLCON!!!
+  v_linear_mps = v_linear_mps + 1;
 
-  RCLCPP_INFO(
-    rclcpp::get_logger("DiffBotSystemHardware"),
-    "Wheel %d: %.3f m/s | %.1f RPM",
-    channel, v_linear_mps, omega_rpm
-  );
+  //Transmit on FL Motor (Channel 0), other return OK to only send once
+  if (channel != 0) {
+    return hardware_interface::return_type::OK;
+  }
 
-  //Pack m/s value into payload
-  std::vector<uint8_t> payload(5);
-  payload[0] = static_cast<uint8_t>(channel);
+  //Load all wheel m/s values and scale up
+  constexpr int16_t SCALE = 1000;  // convert m/s to mm/s = 1000
 
-  uint32_t bits_mps = *reinterpret_cast<uint32_t*>(&v_linear_mps); // mps, use &v_linear_mps | rpm, use &omega_rpm
-  for (int i = 0; i < 4; i++) {
-    payload[i + 1] = (bits_mps >> (i * 8)) & 0xFF;
+  std::vector<int16_t> speeds_mps = {0, 0, 0, 0};
+  for (size_t i = 0; i < 4; i++) {
+    double wheel_mps = wheels[i].command;
+
+    speeds_mps[i] = static_cast<int16_t>(std::round(wheel_mps * SCALE));
+
+    //double rpm = (wheel_mps / wheel_radius) * 60.0 / (2.0 * M_PI);
+  }
+
+  //Build agreed upon Payload: 4, 16 bit ints, each one for a motor
+  //[FL_lo, FL_hi, FR_lo, FR_hi, RL_lo, RL_hi, RR_lo, RR_hi]
+  std::array<uint8_t, 8> payload{};
+  for (size_t i = 0; i < 4; i++) {
+    payload[i * 2] = static_cast<uint8_t>(speeds_mps[i] & 0xFF);
+    payload[i * 2 + 1] = static_cast<uint8_t>((speeds_mps[i] >> 8) & 0xFF);
   }
 
   //Send over CAN
