@@ -255,7 +255,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   constexpr int16_t SCALE = 1000;  // convert m/s to mm/s = 1000
 
   std::vector<int16_t> speeds_mps = {0, 0, 0, 0};
-  for (size_t i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     double wheel_mps = wheels[i].command;
 
     speeds_mps[i] = static_cast<int16_t>(std::round(wheel_mps * SCALE));
@@ -266,7 +266,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   //Build agreed upon Payload: 4, 16 bit ints, each one for a motor
   //[FL_lo, FL_hi, FR_lo, FR_hi, RL_lo, RL_hi, RR_lo, RR_hi]
   std::array<uint8_t, 8> payload{};
-  for (size_t i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     payload[i * 2] = static_cast<uint8_t>(speeds_mps[i] & 0xFF);
     payload[i * 2 + 1] = static_cast<uint8_t>((speeds_mps[i] >> 8) & 0xFF);
   }
