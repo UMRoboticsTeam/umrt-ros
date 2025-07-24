@@ -73,7 +73,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_controllers],
+        parameters=[robot_controllers, {'update_rate': 100}], # Update Rate set for 100Hz for non overflowing CANbus
         output="both",
         remappings=[
             ("~/robot_description", "/robot_description"),
