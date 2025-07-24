@@ -31,6 +31,7 @@
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>xacro</exec_depend>
+  <exec_depend>ros2_socketcan</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
@@ -38,6 +39,7 @@
   <test_depend>launch_testing_ros</test_depend>
   <test_depend>liburdfdom-tools</test_depend>
   <test_depend>xacro</test_depend>
+  <build_depend>ros2_socketcan</build_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

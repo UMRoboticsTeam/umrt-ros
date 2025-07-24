@@ -232,19 +232,41 @@ hardware_interface::return_type DiffBotSystemHardware::read(
 }
 
 
-hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_can_wheel_speed(int channel, double angular_speed) {
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_can_wheel_speed(int channel, double v_linear_mps) {
 
+  //Compute RPM & Log
+  const double omega_rad_s = v_linear_mps / wheel_radius_;
+  double omega_rpm = static_cast<float>(omega_rad_s * 60.0 / (2.0 * M_PI));
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("DiffBotSystemHardware"),
+    "Wheel %d: %.3f m/s | %.1f RPM",
+    channel, v_linear_mps, omega_rpm
+  );
+
+  //Pack m/s value into payload
   std::vector<uint8_t> payload(5);
+  payload[0] = static_cast<uint8_t>(channel);
 
-  float angular_speedf = (float)angular_speed;
+  uint32_t bits_mps = *reinterpret_cast<uint32_t*>(&v_linear_mps); // mps, use &v_linear_mps | rpm, use &omega_rpm
+  for (int i = 0; i < 4; i++) {
+    payload[i + 1] = (bits_mps >> (i * 8)) & 0xFF;
+  }
 
-  payload[0] = channel; 
-  std::memcpy(&payload[1], &angular_speedf, sizeof(float));
-
+  //Send over CAN
   drivers::socketcan::CanId can_id(0x126, 0, drivers::socketcan::FrameType::DATA, drivers::socketcan::StandardFrame);
-  this->can_sender->send(payload.data(), payload.size(), can_id);
-  
-  //this->can_sender->send(payload.data(),  drivers::socketcan::CanId(0x126, 0,  drivers::socketcan::FrameType::DATA,  drivers::socketcan::StandardFrame_{}), 100);
+
+  try {
+    this->can_sender->send(payload.data(), payload.size(), can_id);
+  } catch (std::exception &e){
+    RCLCPP_ERROR(
+      rclcpp::get_logger("DiffBotSystemHardware"),
+      "CAN SEND ERROR: %s", e.what()
+    );
+    return hardware_interface::return_type::ERROR;
+  }
+
+  return hardware_interface::return_type::OK;
 }
 
 /*
