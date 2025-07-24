@@ -254,7 +254,7 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
   }
 
   //Send over CAN
-  drivers::socketcan::CanId can_id(0xFF10, 0, drivers::socketcan::FrameType::DATA, drivers::socketcan::StandardFrame);
+  drivers::socketcan::CanId can_id(0xFF10, 0, drivers::socketcan::FrameType::DATA, drivers::socketcan::ExtendedFrame);
 
   try {
     this->can_sender->send(payload.data(), payload.size(), can_id);
