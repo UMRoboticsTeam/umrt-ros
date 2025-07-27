@@ -32,7 +32,7 @@
 
 #include "ros2_control_demo_example_2/visibility_control.h"
 
-#include "PiPCA9685/PCA9685.h"
+#include <ros2_socketcan/socket_can_sender.hpp>
 
 #include "ros2_control_demo_example_2/wheel_info.hpp"
 
@@ -80,10 +80,9 @@ public:
     const rclcpp_lifecycle::State &previous_state) override;
 
 private:
-  hardware_interface::return_type set_pwm_wheel_speed(
-    int channel, double angular_speed);
-
+  hardware_interface::return_type set_can_wheel_speed(int channel, double angular_speed);
   hardware_interface::return_type try_to_reset_wheels();
+
 
   // Parameters for the DiffBot simulation
   double hw_start_sec_;
@@ -98,7 +97,8 @@ private:
   // Store the command for the simulated robot
   std::vector<WheelInfo> wheels;
 
-  PiPCA9685::PCA9685 pwm_device_;
+  std::unique_ptr<drivers::socketcan::SocketCanSender> can_sender;
+
 };
 
 }  // namespace ros2_control_demo_example_2

@@ -43,6 +43,10 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
+  const std::string can_interface = "can0";
+  this->can_sender = std::make_unique<drivers::socketcan::SocketCanSender>(can_interface);
+
+
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   hw_start_sec_ =
     hardware_interface::stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
@@ -227,6 +231,63 @@ hardware_interface::return_type DiffBotSystemHardware::read(
   return hardware_interface::return_type::OK;
 }
 
+  /* set_can_wheel_speed
+   * NOTES:
+   * 1) This function is called per motor, but we can access wheels array and follow their .command value. For sending one CAN frame for all wheel speeds, we ignore v_linear_mps for one motor nd use wheel indexing as wheels[i]
+   *
+   * 2) Current setup is that we SCALE up to keep precision under the same CAN frame for int16_t. The STM side will downscale by dividing by SCALE and handle the precise value for more exact motor control.
+   *
+   * 3) Constants are in SI units always
+   */
+
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_can_wheel_speed(int channel, double v_linear_mps) {
+
+  //float wheel_radius = 0.1;
+  //SHUT UP COLCON!!!
+  v_linear_mps = v_linear_mps + 1;
+
+  //Transmit on FL Motor (Channel 0), other return OK to only send once
+  if (channel != 0) {
+    return hardware_interface::return_type::OK;
+  }
+
+  //Load all wheel m/s values and scale up
+  constexpr int16_t SCALE = 1000;  // convert m/s to mm/s = 1000
+
+  std::vector<int16_t> speeds_mps = {0, 0, 0, 0};
+  for (int i = 0; i < 4; i++) {
+    double wheel_mps = wheels[i].command;
+
+    speeds_mps[i] = static_cast<int16_t>(std::round(wheel_mps * SCALE));
+
+    //double rpm = (wheel_mps / wheel_radius) * 60.0 / (2.0 * M_PI);
+  }
+
+  //Build agreed upon Payload: 4, 16 bit ints, each one for a motor
+  //[FL_lo, FL_hi, FR_lo, FR_hi, RL_lo, RL_hi, RR_lo, RR_hi]
+  std::array<uint8_t, 8> payload{};
+  for (int i = 0; i < 4; i++) {
+    payload[i * 2] = static_cast<uint8_t>(speeds_mps[i] & 0xFF);
+    payload[i * 2 + 1] = static_cast<uint8_t>((speeds_mps[i] >> 8) & 0xFF);
+  }
+
+  //Send over CAN
+  drivers::socketcan::CanId can_id(0xFF10, 0, drivers::socketcan::FrameType::DATA, drivers::socketcan::ExtendedFrame);
+
+  try {
+    this->can_sender->send(payload.data(), payload.size(), can_id);
+  } catch (std::exception &e){
+    RCLCPP_ERROR(
+      rclcpp::get_logger("DiffBotSystemHardware"),
+      "CAN SEND ERROR: %s", e.what()
+    );
+    return hardware_interface::return_type::ERROR;
+  }
+
+  return hardware_interface::return_type::OK;
+}
+
+/*
 hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::set_pwm_wheel_speed(
   int channel, double angular_speed)
 {
@@ -277,22 +338,26 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
 
   return hardware_interface::return_type::OK;
 }
+*/
+hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::try_to_reset_wheels() {
 
-hardware_interface::return_type
-ros2_control_demo_example_2::DiffBotSystemHardware::try_to_reset_wheels()
-{
-  hardware_interface::return_type retval;
+  bool pwm_driver_unreachable = false;
 
-  for (size_t channel_num = 0; channel_num < 4; channel_num++)
-  {
-    if (set_pwm_wheel_speed(channel_num, 0.0) != hardware_interface::return_type::OK)
-    {
-      retval = hardware_interface::return_type::ERROR;
-      break;
+  for (std::size_t i = 0; i < wheels.size(); i++) {
+    wheels[i].velocity = 0;
+
+    if (this->set_can_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK) {
+      pwm_driver_unreachable = true;
     }
   }
 
-  return retval;
+  if (pwm_driver_unreachable) {
+    return hardware_interface::return_type::ERROR;
+  }
+  else {
+    return hardware_interface::return_type::OK;
+  }
+  
 }
 
 hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardware::write(
@@ -305,18 +370,15 @@ hardware_interface::return_type ros2_control_demo_example_2::DiffBotSystemHardwa
 
     wheels[i].velocity = wheels[i].command;
 
-    if (this->set_pwm_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK)
-    {
+    if (this->set_can_wheel_speed(i, wheels[i].command) != hardware_interface::return_type::OK) {
       pwm_driver_unreachable = true;
     }
   }
 
-  if (pwm_driver_unreachable)
-  {
+  if (pwm_driver_unreachable) {
     return hardware_interface::return_type::ERROR;
   }
-  else
-  {
+  else {
     return hardware_interface::return_type::OK;
   }
 }
@@ -337,6 +399,7 @@ hardware_interface::CallbackReturn ros2_control_demo_example_2::DiffBotSystemHar
   {
     return hardware_interface::CallbackReturn::ERROR;
   }
+  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 }  // namespace ros2_control_demo_example_2

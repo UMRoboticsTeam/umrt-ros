@@ -3,9 +3,6 @@ ARG USERNAME=USERNAME
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
 
-# Used for depthai stuff. -njreichert
-COPY requirements.txt /opt/app/requirements.txt
-
 # Environment Variables
 ENV WS=/workspace
 
@@ -58,6 +55,9 @@ RUN apt install -y \
 	libcairo2-dev \
 	libgirepository1.0-dev 
 
+RUN apt install -y  ros-humble-ros2-socketcan
+
+
 # ROS2 Dependencies
 # TODO: What does this do on the 
 # RUN apt install -y --no-install-recommends \
@@ -71,6 +71,13 @@ RUN apt-get update && apt-get install -y \
     libcairo2-dev \
     libgirepository1.0-dev
 RUN pip install meson
+
+# Used for depthai stuff. -njreichert
+COPY requirements.txt /opt/app/requirements.txt
+
+# Used for depthai stuff. -njreichert
+COPY requirements.txt /opt/app/requirements.txt
+
 
 # Setup
 RUN pip install -r /opt/app/requirements.txt
@@ -89,8 +96,8 @@ RUN apt install -y \
 	# Visualization and simulation tools. -njreichert
 	ros-humble-rviz2 \
 	ros-humble-joint-state-publisher-gui \
-    ros-humble-gazebo-ros-pkgs \
-    ros-humble-gazebo-ros2-control \
+        ros-humble-gazebo-ros-pkgs \
+        ros-humble-gazebo-ros2-control \
 	# Tools for working with / connecting to joysticks & gamepads. -njreichert
 	joystick \
 	jstest-gtk \
@@ -98,7 +105,17 @@ RUN apt install -y \
 	# ROS2 Joystick utilities. -njreichert
 	ros-humble-joy \
 	ros-humble-joy-teleop \
-	ros-humble-teleop-twist-joy
+	ros-humble-teleop-twist-joy \
+        # Foxglove for viewing ROS topics
+	ros-humble-foxglove-bridge
+
+# CAN Stuff
+
+RUN apt update &&\
+    apt install software-properties-common -y &&\
+    add-apt-repository ppa:lely/ppa -y &&\
+    apt update &&\
+    apt install net-tools iproute2 can-utils kmod liblely-coapp-dev liblely-co-tools python3-dcf-tools -y
 
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \
